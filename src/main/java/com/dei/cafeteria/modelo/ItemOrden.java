@@ -12,6 +12,13 @@ public class ItemOrden {
         this.subtotal = subtotal;
     }
 
+    public ItemOrden(int id, Producto producto, int cantidad, double subtotal) {
+        this.id = id;
+        this.producto = producto;
+        this.cantidad = cantidad;
+        this.subtotal = subtotal;
+    }
+
     public Producto getProducto() {
         return producto;
     }

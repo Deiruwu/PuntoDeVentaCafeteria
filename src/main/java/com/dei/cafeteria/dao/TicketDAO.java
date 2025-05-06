@@ -56,7 +56,7 @@ public class TicketDAO {
                 ticket = new Ticket(
                         rs.getInt("id"),
                         (Orden) rs.getObject("ordeb"),
-                        rs.getDate("fecha"),
+                        rs.getTimestamp("fecha").toLocalDateTime(),
                         rs.getDouble("total")
                 );
             }

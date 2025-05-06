@@ -1,10 +1,9 @@
 package com.dei.cafeteria.dao;
 
-import com.dei.cafeteria.modelo.Empleado;
-import com.dei.cafeteria.modelo.Orden;
-import com.dei.cafeteria.modelo.Mesa;
+import com.dei.cafeteria.modelo.*;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,37 +15,42 @@ public class OrdenDAO {
     }
 
     public void guardar(Orden orden) throws SQLException {
-        String sql = "INSERT INTO orden (fecha, mesa, empleado, total) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO orden (fecha_hora, id_mesa, id_mesero) VALUES (?, ?, ?)";
 
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
-            stmt.setString(1,"fecha");
-            stmt.setObject(2,"mesa");
-            stmt.setObject(3,"empleado");
-            stmt.setDouble(4, Double.parseDouble("total"));
+        try (PreparedStatement stmt = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(orden.getFechaHora()));
+            stmt.setInt(2, orden.getMesa().getId());
+            stmt.setInt(3, orden.getMesero().getId());
             stmt.executeUpdate();
+
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                orden.setId(generatedKeys.getInt(1));
+            }
+
+            ItemOrdenDAO itemDAO = new ItemOrdenDAO(conexion);
+            for (ItemOrden item : orden.getItems()) {
+                item.setId(orden.getId());
+                itemDAO.guardar(item);
+            }
         }
     }
 
     public void actualizar(Orden orden) throws SQLException {
-        String sql = "UPDATE orden SET fecha = ?, mesa = ?, empleado = ?, total = ? WHERE id = ?";
+        String sql = "UPDATE orden SET fecha_hora = ?, id_mesa = ?, id_mesero = ? WHERE id = ?";
 
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
-            stmt.setString(1,"fecha");
-            stmt.setObject(2,"mesa");
-            stmt.setObject(3,"empleado");
-            stmt.setDouble(4, Double.parseDouble("total"));
-            stmt.setInt(5, orden.getId());
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(orden.getFechaHora()));
+            stmt.setInt(2, orden.getMesa().getId());
+            stmt.setInt(3, orden.getMesero().getId());
+            stmt.setInt(4, orden.getId());
             stmt.executeUpdate();
         }
     }
 
     public void eliminarPorId(int id) throws SQLException {
         String sql = "DELETE FROM orden WHERE id = ?";
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
-            stmt.setInt(1, id);
-        }
-
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         }
@@ -56,126 +60,60 @@ public class OrdenDAO {
         String sql = "SELECT * FROM orden WHERE id = ?";
         Orden orden = null;
 
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
 
+            if (rs.next()) {
+                int ordenId = rs.getInt("id");
+                Timestamp fechaHora = rs.getTimestamp("fecha_hora");
+                Empleado mesero = new EmpleadoDAO(conexion).buscarPorId(rs.getInt("id_mesero"));
+                Mesa mesa = new MesaDAO(conexion).buscarPorId(rs.getInt("id_mesa"));
 
-            if (rs.next()){
-                orden = new Orden(
-                        rs.getInt("id"),
-                        rs.getDate("fecha"),
-                        (Empleado) rs.getObject("mesero"),
-                        (Mesa) rs.getObject("mesa"),
-                        rs.getArray("item")
-                );
-            }
-            return orden;
-        }
-    }
+                // Recuperar los ItemOrden a través de los IDs
+                List<ItemOrden> items = obtenerItemsDeOrden(ordenId);
 
-    public List<Orden> buscarPorFecha(String desde, String hasta) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT * FROM orden");
-        boolean tieneDesde = desde != null && !desde.isEmpty();
-        boolean tieneHasta = hasta != null && !hasta.isEmpty();
-
-        List<Orden> ordenes = new ArrayList<>();
-
-        if (tieneDesde || tieneHasta) {
-            sql.append(" WHERE");
-            if (tieneDesde) {
-                sql.append(" fecha >= ?");
-            }
-            if (tieneDesde && tieneHasta) {
-                sql.append(" AND");
-            }
-            if (tieneHasta) {
-                sql.append(" fecha <= ?");
+                orden = new Orden(ordenId, fechaHora.toLocalDateTime(), mesero, mesa, items);
             }
         }
-
-        try (PreparedStatement stmt = conexion.prepareStatement(sql.toString())) {
-            int index = 1;
-
-            if (tieneDesde) {
-                stmt.setString(index++, desde);
-            }
-            if (tieneHasta) {
-                stmt.setString(index++, hasta);
-            }
-
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Orden orden = new Orden(
-                        rs.getInt("id"),
-                        rs.getDate("fecha"),
-                        (Empleado) rs.getObject("mesero"),
-                        (Mesa) rs.getObject("mesa"),
-                        rs.getArray("item")
-                );
-                ordenes.add(orden);
-            }
-        }
-        return ordenes;
-    }
-
-    public List<Orden> buscarPorMesero(int id) throws SQLException {
-        String sql = "SELECT * FROM orden WHERE mesero_id = ?";
-        List<Orden> ordenes = new ArrayList<>();
-
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                ordenes.add(new Orden(
-                        rs.getInt("id"),
-                        rs.getDate("fecha"),
-                        (Empleado) rs.getObject("mesero"),
-                        (Mesa) rs.getObject("mesa"),
-                        rs.getArray("item")
-                ));
-            }
-        }
-        return ordenes;
-    }
-
-    public List<Orden> buscarPorMesa(int id) throws SQLException {
-        String sql = "SELECT * FROM orden WHERE mesa_id = ?";
-        List<Orden> ordenes = new ArrayList<>();
-
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                ordenes.add(new Orden(
-                        rs.getInt("id"),
-                        rs.getDate("fecha"),
-                        (Empleado) rs.getObject("mesero"),
-                        (Mesa) rs.getObject("mesa"),
-                        rs.getArray("item")
-                ));
-            }
-        }
-        return ordenes;
+        return orden;
     }
 
     public List<Orden> listarTodos() throws SQLException {
-        String sql = "SELECT * FROM orden";
         List<Orden> ordenes = new ArrayList<>();
-
-        try(PreparedStatement stmt = conexion.prepareStatement(sql)){
+        String sql = "SELECT * FROM orden";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                ordenes.add(new Orden(
-                        rs.getInt("id"),
-                        rs.getDate("fecha"),
-                        (Empleado) rs.getObject("mesero"),
-                        (Mesa) rs.getObject("mesa"),
-                        rs.getArray("item")
-                ));
+                Orden orden = buscarPorId(rs.getInt("id"));
+                if (orden != null) ordenes.add(orden);
             }
         }
         return ordenes;
+    }
+
+    public List<ItemOrden> obtenerItemsDeOrden(int ordenId) throws SQLException {
+        List<ItemOrden> items = new ArrayList<>();
+        String sql = "SELECT * FROM item_orden WHERE orden_id = ?";
+
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setInt(1, ordenId); // Pasamos el ID de la orden
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int productoId = rs.getInt("producto_id");
+                Producto producto = new ProductoDAO(conexion).buscarPorId(productoId);
+
+                // Crear un objeto ItemOrden
+                ItemOrden item = new ItemOrden(
+                        rs.getInt("id"),
+                        producto,
+                        rs.getInt("cantidad"),
+                        rs.getDouble("subtotal")
+                );
+                items.add(item);
+            }
+        }
+        return items;
     }
 }

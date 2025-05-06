@@ -1,7 +1,7 @@
 package com.dei.cafeteria.modelo;
 
 public enum RolEmpleado {
+    ADMINISTRADOR,
     MESERO,
-    CAJERO,
-    ADMINISTRADOR
+    CAJERO
 }

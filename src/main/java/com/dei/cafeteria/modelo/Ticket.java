@@ -1,15 +1,14 @@
 package com.dei.cafeteria.modelo;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public class Ticket {
     private int id;
     private Orden orden;
-    private Date fechaHora;
+    private LocalDateTime fechaHora;
     private double total;
 
-    public Ticket(int id, Orden orden, Date fechaHora, double total) {
+    public Ticket(int id, Orden orden, LocalDateTime fechaHora, double total) {
         this.id = id;
         this.orden = orden;
         this.fechaHora = fechaHora;

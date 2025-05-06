@@ -1,23 +1,28 @@
 package com.dei.cafeteria.modelo;
 
-import java.sql.Array;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class Orden {
     private int id;
-    private Date fechaHora;
+    private LocalDateTime fechaHora;
     private Empleado mesero;
     private Mesa mesa;
     private List<ItemOrden> items;
 
-    public Orden(int id, Date fechaHora, Empleado mesero, Mesa mesa, Array items) {
+    public Orden(int id, LocalDateTime fechaHora, Empleado mesero, Mesa mesa, List<ItemOrden> items) {
         this.id = id;
         this.fechaHora = fechaHora;
         this.mesero = mesero;
         this.mesa = mesa;
-        this.items = (List<ItemOrden> ) items;
+        this.items = items;
+    }
+
+    public Orden(LocalDateTime fechaHora, Empleado mesero, Mesa mesa, List<ItemOrden> items) {
+        this.fechaHora = fechaHora;
+        this.mesero = mesero;
+        this.mesa = mesa;
+        this.items = items;
     }
 
     public int getId() {
