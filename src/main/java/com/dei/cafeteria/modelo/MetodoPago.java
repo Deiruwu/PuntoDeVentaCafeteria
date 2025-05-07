@@ -9,25 +9,18 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "mesa")
-public class Mesa {
+@Table(name = "metodo_pago")
+public class MetodoPago {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
-    private String nombre;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EstadoMesa estado;
-
-    @ManyToOne
-    @JoinColumn(name = "empleado_id", nullable = false)
-    private Empleado empleado;
+    private MetodoPagoTipo tipo;
 
     @Column(nullable = false)
-    private String ubicacion;
+    private String descripcion;
 
     @Column(name = "fecha_creacion", nullable = false)
     private Timestamp fechaCreacion;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="puntoventa.db" uuid="6f83203e-90ac-4775-9fe2-5565affa82bd">
+    <data-source source="LOCAL" name="puntoventa.db" uuid="ebb837c1-f32f-4f76-ac61-1e9d5f5dca2d">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>

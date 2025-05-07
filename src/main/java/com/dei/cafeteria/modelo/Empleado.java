@@ -1,37 +1,34 @@
 package com.dei.cafeteria.modelo;
 
+import lombok.*;
+import jakarta.persistence.*;
+import java.sql.Timestamp;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "empleado")
 public class Empleado {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     private String nombre;
-    private RolEmpleado rol;
 
-    public Empleado(int id, String nombre, RolEmpleado rol) {
-        this.id = id;
-        this.nombre = nombre;
-        this.rol = rol;
-    }
+    private String apellido;
 
-    public RolEmpleado getRol() {
-        return rol;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rol", nullable = false)
+    private Rol rol;
 
-    public void setRol(RolEmpleado rol) {
-        this.rol = rol;
-    }
+    private String imagenUrl;
 
-    public String getNombre() {
-        return nombre;
-    }
+    @Column(name = "fecha_creacion")
+    private Timestamp fechaCreacion;
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    @Column(name = "fecha_actualizacion")
+    private Timestamp fechaActualizacion;
 }

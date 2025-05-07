@@ -1,57 +1,36 @@
 package com.dei.cafeteria.modelo;
 
+import jakarta.persistence.*;
+import lombok.*;
+import java.sql.Timestamp;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "producto")
 public class Producto {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @Column(nullable = false, length = 500)
+    private String descripcion;
+
+    @Column(nullable = false)
     private double precio;
-    private int stock;
-    private String codigoBarras;
 
-    public Producto(int id, String nombre, double precio, int stock, String codigoBarras) {
-        this.id = id;
-        this.nombre = nombre;
-        this.precio = precio;
-        this.stock = stock;
-        this.codigoBarras = codigoBarras;
-    }
+    @ManyToOne
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private com.cafeteria.modelo.CategoriaProducto categoria;
 
-    public int getId() {
-        return id;
-    }
+    @Column(nullable = false)
+    private Timestamp fechaCreacion;
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
-
-    public int getStock() {
-        return stock;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
-    }
-
-    public String getCodigoBarras() {
-        return codigoBarras;
-    }
-
-    public void setCodigoBarras(String codigoBarras) {
-        this.codigoBarras = codigoBarras;
-    }
+    @Column(nullable = false)
+    private Timestamp fechaActualizacion;
 }

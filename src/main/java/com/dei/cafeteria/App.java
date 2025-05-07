@@ -32,7 +32,7 @@ public class App {
                 Usuario usuario = usuarioOpt.get();  // Obtener el Usuario desde el Optional
                 System.out.println("¡Login exitoso!");
                 // Aquí puedes continuar con lo que necesites, por ejemplo:
-                System.out.println("Bienvenido, " + usuario.getEmpleado().getNombre());
+                System.out.println("Bienvenida, " + usuario.getEmpleado().getNombre());
             } else {
                 System.out.println("Login fallido. Nombre de usuario o contraseña incorrectos.");
             }

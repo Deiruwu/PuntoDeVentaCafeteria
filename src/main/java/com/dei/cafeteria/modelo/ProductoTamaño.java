@@ -9,24 +9,14 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "usuario")
-public class Usuario {
+@Table(name = "producto_tamano")
+public class ProductoTamaño {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String nombre;
-
-    @Column(nullable = false)
-    private String contrasena;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoUsuario estado;
 
     @Column(nullable = false)
     private Timestamp fechaCreacion;

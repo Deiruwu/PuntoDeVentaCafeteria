@@ -1,67 +1,45 @@
 package com.dei.cafeteria.modelo;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import jakarta.persistence.*;
+import lombok.*;
+import java.sql.Timestamp;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "orden")
 public class Orden {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private LocalDateTime fechaHora;
-    private Empleado mesero;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario;
+
+    @ManyToOne
+    @JoinColumn(name = "id_mesa", nullable = false)
     private Mesa mesa;
-    private List<ItemOrden> items;
 
-    public Orden(int id, LocalDateTime fechaHora, Empleado mesero, Mesa mesa, List<ItemOrden> items) {
-        this.id = id;
-        this.fechaHora = fechaHora;
-        this.mesero = mesero;
-        this.mesa = mesa;
-        this.items = items;
-    }
+    @ManyToOne
+    @JoinColumn(name = "id_empleado", nullable = false)
+    private Empleado empleado;
 
-    public Orden(LocalDateTime fechaHora, Empleado mesero, Mesa mesa, List<ItemOrden> items) {
-        this.fechaHora = fechaHora;
-        this.mesero = mesero;
-        this.mesa = mesa;
-        this.items = items;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoOrden estado;
 
-    public int getId() {
-        return id;
-    }
+    @Column(nullable = false)
+    private Timestamp fechaCreacion;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    @Column(nullable = false)
+    private Timestamp fechaActualizacion;
 
-    public LocalDateTime getFechaHora() {
-        return fechaHora;
-    }
+    @Column(nullable = true)
+    private Timestamp fechaEntrega;
 
-    public void setFechaHora(LocalDateTime fechaHora) {
-        this.fechaHora = fechaHora;
-    }
-
-    public Empleado getMesero() {
-        return mesero;
-    }
-
-    public void setMesero(Empleado mesero) {
-        this.mesero = mesero;
-    }
-
-    public Mesa getMesa() {
-        return mesa;
-    }
-
-    public void setMesa(Mesa mesa) {
-        this.mesa = mesa;
-    }
-
-    public List<ItemOrden> getItems() {
-        return items;
-    }
-
-    public void setItems(List<ItemOrden> items) {
-        this.items = items;
-    }
+    @Column(nullable = true)
+    private String comentarios;
 }
