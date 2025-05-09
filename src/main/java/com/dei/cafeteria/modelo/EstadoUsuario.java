@@ -1,7 +1,17 @@
 package com.dei.cafeteria.modelo;
 
-public enum EstadoUsuario {
-    ACTIVO,
-    INACTIVO,
-    SUSPENDIDO
+import lombok.*;
+
+import java.time.LocalDateTime;
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class EstadoUsuario {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 }

@@ -1,26 +1,16 @@
 package com.dei.cafeteria.modelo;
-
-import jakarta.persistence.*;
+// Representa la relación muchos a muchos entre productos y tamaños
 import lombok.*;
-import java.sql.Timestamp;
 
+import java.time.LocalDateTime;
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "producto_tamano")
 public class ProductoTamaño {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(nullable = false, length = 50)
-    private String nombre;
-
-    @Column(nullable = false)
-    private Timestamp fechaCreacion;
-
-    @Column(nullable = false)
-    private Timestamp fechaActualizacion;
+    private ProductoTamañoId id;
+    private Boolean activo;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 }

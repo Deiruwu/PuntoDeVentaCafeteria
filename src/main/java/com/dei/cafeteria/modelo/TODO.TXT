@@ -1,0 +1,393 @@
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class CategoriaProducto {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Empleado {
+    private Integer id;
+    private String nombre;
+    private String apellido;
+    private Rol rol;
+    private String imagenUrl;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class EstadoMesa {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class EstadoOrden {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class EstadoUsuario {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class ItemOrden {
+    private Integer id;
+    private Orden orden;
+    private Producto producto;
+    private TamañoProducto tamaño;
+    private Double cantidad;
+    private Double precioUnitario;
+    private Double precioConIva;
+    private Double subtotal;
+    private Double iva;
+    private Double total;
+    private String notas;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Mesa {
+    private Integer id;
+    private Integer numero;
+    private Integer capacidad;
+    private EstadoMesa estado;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class MetodoPago {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private Boolean requiereReferencia;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class MovimientoInventario {
+    private Integer id;
+    private Producto producto;
+    private TipoMovimiento tipoMovimiento;
+    private Double cantidad;
+    private Double stockPrevio;
+    private Double stockNuevo;
+    private Empleado empleado;
+    private String referencia;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Orden {
+    private Integer id;
+    private LocalDateTime fechaHora;
+    private Mesa mesa;
+    private Empleado mesero;
+    private EstadoOrden estado;
+    private Double subtotal;
+    private Double iva;
+    private Double total;
+    private String notas;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Pago {
+    private Integer id;
+    private Orden orden;
+    private Empleado cajero;
+    private LocalDateTime fechaHora;
+    private Double monto;
+    private MetodoPago metodoPago;
+    private String referencia;
+    private Double cambio;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Producto {
+    private Integer id;
+    private String nombre;
+    private Double precioBase;
+    private Boolean aplicaIva;
+    private String descripcion;
+    private CategoriaProducto categoria;
+    private Boolean disponible;
+    private Double stockActual;
+    private Double stockMinimo;
+    private String imagenUrl;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+// Representa la relación muchos a muchos entre productos y tamaños
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProductoTamaño {
+    private Producto producto;
+    private TamañoProducto tamaño;
+    private Boolean activo;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Rol {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class TamañoProducto {
+    private Integer id;
+    private String nombre;
+    private Double factorPrecio;
+    private Boolean esPorcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class TipoMovimiento {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}
+
+package com.dei.cafeteria.modelo;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Usuario {
+    private Integer id;
+    private Empleado empleado;
+    private String nombreUsuario;
+    private String hashContraseña;
+    private LocalDateTime ultimoLogin;
+    private EstadoUsuario estado;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+}

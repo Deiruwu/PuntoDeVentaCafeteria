@@ -1,5 +1,5 @@
 package com.dei.cafeteria.modelo;
-
+//
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -8,17 +8,11 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Producto {
+public class TamañoProducto {
     private Integer id;
     private String nombre;
-    private Double precioBase;
-    private Boolean aplicaIva;
-    private String descripcion;
-    private CategoriaProducto categoria;
-    private Boolean disponible;
-    private Double stockActual;
-    private Double stockMinimo;
-    private String imagenUrl;
+    private Double factorPrecio;
+    private Boolean esPorcion;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 }

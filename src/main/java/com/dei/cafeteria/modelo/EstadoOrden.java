@@ -1,9 +1,17 @@
 package com.dei.cafeteria.modelo;
 
-public enum EstadoOrden {
-    PENDIENTE,
-    PREPARACION,
-    LISTA,
-    ENTREGADA,
-    CANCELADA
+import lombok.*;
+
+import java.time.LocalDateTime;
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class EstadoOrden {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 }

@@ -1,6 +1,17 @@
 package com.dei.cafeteria.modelo;
 
-public enum TipoMovimiento {
-    ENTRADA,
-    SALIDA;
+import lombok.*;
+
+import java.time.LocalDateTime;
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class TipoMovimiento {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 }

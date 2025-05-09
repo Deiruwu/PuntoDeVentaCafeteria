@@ -1,8 +1,17 @@
 package com.dei.cafeteria.modelo;
 
-public enum EstadoMesa {
-    DISPONIBLE,
-    OCUPADA,
-    RESERVADA,
-    FUERA_DE_SERVICIO
+import lombok.*;
+
+import java.time.LocalDateTime;
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class EstadoMesa {
+    private Integer id;
+    private String nombre;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 }

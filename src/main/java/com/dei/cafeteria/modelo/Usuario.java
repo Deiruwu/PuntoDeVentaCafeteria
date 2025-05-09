@@ -1,36 +1,20 @@
 package com.dei.cafeteria.modelo;
 
-import jakarta.persistence.*;
 import lombok.*;
-import java.sql.Timestamp;
 
+import java.time.LocalDateTime;
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "usuario")
 public class Usuario {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false)
-    private String contrasena;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    private Integer id;
+    private Empleado empleado;
+    private String nombreUsuario;
+    private String hashContraseña;
+    private LocalDateTime ultimoLogin;
     private EstadoUsuario estado;
-
-    @Column(nullable = false)
-    private Timestamp fechaCreacion;
-
-    @Column(nullable = false)
-    private Timestamp fechaActualizacion;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
 }
