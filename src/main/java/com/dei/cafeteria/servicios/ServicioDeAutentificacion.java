@@ -1,43 +1,65 @@
 package com.dei.cafeteria.servicios;
 
+import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.dao.UsuarioDAO;
 import com.dei.cafeteria.modelo.Usuario;
+import com.dei.cafeteria.modelo.EstadoUsuario;
 
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.util.Date;
+import org.mindrot.jbcrypt.BCrypt;
 
+import javax.swing.*;
+
+/**
+ * Servicio que maneja la autenticación de usuarios usando BCrypt.
+ */
 public class ServicioDeAutentificacion {
-    private final UsuarioDAO usuarioDao;
-    private Usuario usuarioActual;
+    private static final int ID_ESTADO_ACTIVO = 1;
+    private static final int ID_ESTADO_INACTIVO = 2;
+    private final UsuarioDAO usuarioDAO;
 
-    public ServicioDeAutentificacion(UsuarioDAO usuarioDao) {
-        this.usuarioDao = usuarioDao;
+    public ServicioDeAutentificacion(UsuarioDAO usuarioDAO) {
+        this.usuarioDAO = usuarioDAO;
     }
 
-    public boolean login(String username, String passwordHash) {
+    public Usuario autenticar(String nombreUsuario, String contraseña) throws ServicioException {
         try {
-            // Intentar autenticar y obtener el usuario desde el Optional
-            Optional<Usuario> usuarioOpt = usuarioDao.autenticar(username, passwordHash);
+            Usuario usuario = usuarioDAO.buscarPorNombreUsuario(nombreUsuario);
 
-            // Si el usuario está presente, lo asignamos a usuarioActual
-            if (usuarioOpt.isPresent()) {
-                this.usuarioActual = usuarioOpt.get();
-                return true;
+            if (usuario == null) {
+                return null;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            if (usuario.getEstado().getId() != ID_ESTADO_ACTIVO) {
+                throw new ServicioException("El usuario está " + usuario.getEstado().getNombre());
+            }
+
+            // Verificar contraseña con BCrypt
+            if (BCrypt.checkpw(contraseña, usuario.getHashContraseña())) {
+                Timestamp ahora = new Timestamp(System.currentTimeMillis());
+                usuarioDAO.actualizarUltimoAcceso(usuario.getId(), ahora);
+                return usuario;
+            } else {
+                return null; // Contraseña incorrecta
+            }
+        } catch (DAOException e) {
+            throw new ServicioException("Error al autenticar: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new ServicioException("Formato de hash inválido: " + e.getMessage(), e);
         }
-        return false;
     }
 
-    public void logout() {
-        this.usuarioActual = null;
+    // Metodo para generar hash de contraseña con BCrypt (útil al crear/actualizar usuarios)
+    public static String hashContraseña(String contraseña) {
+        return BCrypt.hashpw(contraseña, BCrypt.gensalt());
     }
 
-    public Usuario getUsuarioActual() {
-        return usuarioActual;
-    }
-
-    public boolean estaAutenticado() {
-        return usuarioActual != null;
+    public boolean existeUsuario(String nombreUsuario) throws ServicioException {
+        try {
+            return usuarioDAO.buscarPorNombreUsuario(nombreUsuario) != null;
+        } catch (DAOException e) {
+            throw new ServicioException("Error al verificar usuario: " + e.getMessage(), e);
+        }
     }
 }

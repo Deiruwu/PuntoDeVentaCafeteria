@@ -6,21 +6,20 @@ import com.dei.cafeteria.modelo.Empleado;
 import com.dei.cafeteria.modelo.EstadoUsuario;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
  * Implementación de DAO para la entidad Usuario.
  */
 public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
-
     // DAOs dependientes
-    private final RolDAO rolDAO;
     private final EmpleadoDAO empleadoDAO;
     private final EstadoUsuarioDAO estadoUsuarioDAO;
 
     // Consultas SQL
     private static final String INSERT = "INSERT INTO usuario (nombre_usuario, hash_contraseña, empleado_id, estado_id, ultimo_login) " +
-            "VALUES (?, ?, ?, ?, ?, ?)";
+            "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE = "UPDATE usuario SET nombre_usuario = ?, hash_contraseña = ?, " +
             "empleado_id = ?, estado_id = ?, ultimo_login = ? WHERE id = ?";
     private static final String DELETE = "DELETE FROM usuario WHERE id = ?";
@@ -29,16 +28,14 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
     private static final String FIND_BY_USERNAME = "SELECT * FROM usuario WHERE nombre_usuario = ?"; // Usando índice idx_usuario_nombre_usuario
     private static final String FIND_BY_EMPLEADO = "SELECT * FROM usuario WHERE empleado_id = ?";
     private static final String FIND_BY_ESTADO = "SELECT * FROM usuario WHERE estado_id = ?";
-    private static final String UPDATE_ultimo_login = "UPDATE usuario SET ultimo_login = ? WHERE id = ?";
+    private static final String UPDATE_ULTIMO_LOGIN = "UPDATE usuario SET ultimo_login = ? WHERE id = ?";
 
     /**
      * Constructor con dependencias.
-     * @param rolDAO DAO para roles
      * @param empleadoDAO DAO para empleados
      * @param estadoUsuarioDAO DAO para estados de usuario
      */
-    public UsuarioDAO(RolDAO rolDAO, EmpleadoDAO empleadoDAO, EstadoUsuarioDAO estadoUsuarioDAO) {
-        this.rolDAO = rolDAO;
+    public UsuarioDAO(EmpleadoDAO empleadoDAO, EstadoUsuarioDAO estadoUsuarioDAO) {
         this.empleadoDAO = empleadoDAO;
         this.estadoUsuarioDAO = estadoUsuarioDAO;
     }
@@ -156,9 +153,9 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
      * @param ultimoAcceso Fecha del último acceso
      * @throws DAOException Si ocurre un error al actualizar
      */
-    public void actualizarUltimoAcceso(int id, java.util.Date ultimoAcceso) throws DAOException {
+    public void actualizarUltimoAcceso(int id, Timestamp ultimoAcceso) throws DAOException {
         try {
-            int filasAfectadas = ejecutarUpdate(UPDATE_ultimo_login, ultimoAcceso, id);
+            int filasAfectadas = ejecutarUpdate(UPDATE_ULTIMO_LOGIN, ultimoAcceso, id);
             if (filasAfectadas == 0) {
                 throw new DAOException("No se encontró el usuario con ID " + id);
             }
@@ -174,7 +171,6 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
      * @throws SQLException Si ocurre un error al acceder a los datos
      */
     private Usuario mapearUsuario(ResultSet rs) throws SQLException {
-        int rolId = rs.getInt("rol_id");
         int empleadoId = rs.getInt("empleado_id");
         int estadoId = rs.getInt("estado_id");
 
@@ -194,7 +190,10 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
                 .empleado(empleado)
                 .nombreUsuario(rs.getString("nombre_usuario"))
                 .hashContraseña(rs.getString("hash_contraseña"))
-                .ultimoLogin(rs.getTimestamp("ultimo_login").toLocalDateTime())
+                .ultimoLogin(
+                        rs.getTimestamp("ultimo_login") != null
+                                ? rs.getTimestamp("ultimo_login").toLocalDateTime()
+                                : null)
                 .estado(estado)
                 .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
                 .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())

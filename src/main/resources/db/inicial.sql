@@ -249,9 +249,16 @@ CREATE INDEX idx_pago_metodo ON pago(metodo_pago_id);
 -- ================================================================
 -- TRIGGERS
 -- ================================================================
--- ================================================================
--- TRIGGERS CORREGIDOS PARA SQLITE
--- ================================================================
+
+CREATE TRIGGER actualizar_ultimo_login
+    AFTER UPDATE ON usuario
+    FOR EACH ROW
+BEGIN
+    UPDATE usuario
+    SET ultimo_login = datetime(NEW.ultimo_login, 'unixepoch')
+    WHERE id = NEW.id;
+END;
+
 
 -- Trigger para actualizar fecha_actualizacion en todas las tablas
 CREATE TRIGGER IF NOT EXISTS update_rol_fecha_actualizacion

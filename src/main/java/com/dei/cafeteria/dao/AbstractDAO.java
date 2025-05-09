@@ -17,7 +17,7 @@ import java.util.List;
 public abstract class AbstractDAO<T, K> implements DAO<T, K> {
 
     // Ruta de la base de datos SQLite
-    private static final String URL_CONEXION = "jdbc:sqlite:inicio.sql";
+    private static final String URL_CONEXION = "jdbc:sqlite:data/puntoventa.db";
 
     /**
      * Obtiene una conexión a la base de datos.

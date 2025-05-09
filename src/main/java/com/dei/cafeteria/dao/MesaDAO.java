@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Implementación de DAO para la entidad Mesa.
  */
-public class MesaDAO extends AbstractDAO<Mesa, int> {
+public class MesaDAO extends AbstractDAO<Mesa, Integer> {
 
     // DAO dependiente
     private final EstadoMesaDAO estadoMesaDAO;
@@ -64,7 +64,7 @@ public class MesaDAO extends AbstractDAO<Mesa, int> {
     }
 
     @Override
-    public void eliminar(int id) throws DAOException {
+    public void eliminar(Integer id) throws DAOException {
         try {
             int filasAfectadas = ejecutarUpdate(DELETE, id);
             if (filasAfectadas == 0) {
@@ -76,7 +76,7 @@ public class MesaDAO extends AbstractDAO<Mesa, int> {
     }
 
     @Override
-    public Mesa buscarPorId(int id) throws DAOException {
+    public Mesa buscarPorId(Integer id) throws DAOException {
         try {
             return ejecutarQueryUnico(FIND_BY_ID, this::mapearMesa, id);
         } catch (SQLException e) {
