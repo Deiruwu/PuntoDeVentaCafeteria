@@ -54,6 +54,7 @@ public class CategoriaProductoDAO extends AbstractDAO<CategoriaProducto, Integer
         }
     }
 
+
     @Override
     public List<CategoriaProducto> listarTodos() throws DAOException {
         try {

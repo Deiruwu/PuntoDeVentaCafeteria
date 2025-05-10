@@ -15,4 +15,8 @@ public class Mesa {
     private EstadoMesa estado;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    public int getEstadoMesa() {
+        return getEstado().getId();
+    }
 }

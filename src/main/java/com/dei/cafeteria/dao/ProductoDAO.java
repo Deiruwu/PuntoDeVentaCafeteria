@@ -13,6 +13,9 @@ public class ProductoDAO extends AbstractDAO<Producto, Integer> {
     private static final String DELETE = "DELETE FROM producto WHERE id=?";
     private static final String FIND_BY_ID = "SELECT * FROM producto WHERE id=?";
     private static final String FIND_ALL = "SELECT * FROM producto";
+    private static final String FIND_BY_CATEGORIA_ID = "SELECT * FROM producto WHERE categoria_id = ?";
+    private static final String FIND_BY_NAME = "SELECT * FROM producto WHERE nombre = ?";
+
 
     @Override
     public Producto guardar(Producto producto) throws DAOException {
@@ -58,6 +61,22 @@ public class ProductoDAO extends AbstractDAO<Producto, Integer> {
             return ejecutarQueryUnico(FIND_BY_ID, this::mapear, id);
         } catch (SQLException e) {
             throw new DAOException("Error al buscar producto por ID: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Producto> buscarPorCategoriaId(Integer categoriaId) throws DAOException {
+        try {
+            return ejecutarQuery(FIND_BY_CATEGORIA_ID, this::mapear, categoriaId);
+        } catch (SQLException e) {
+            throw new DAOException("Error al buscar productos por categoría ID: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Producto> buscarPorNombre(String nombre) throws DAOException {
+        try {
+            return ejecutarQuery(FIND_BY_NAME, this::mapear, nombre);
+        } catch (SQLException e) {
+            throw new DAOException("Error al buscar productos por categoría ID: " + e.getMessage(), e);
         }
     }
 

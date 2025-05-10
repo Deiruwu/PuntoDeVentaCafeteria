@@ -4,6 +4,8 @@ import com.dei.cafeteria.modelo.Usuario;
 import com.dei.cafeteria.modelo.Rol;
 import com.dei.cafeteria.modelo.Empleado;
 import com.dei.cafeteria.modelo.EstadoUsuario;
+import lombok.NoArgsConstructor;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -39,6 +41,7 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
         this.empleadoDAO = empleadoDAO;
         this.estadoUsuarioDAO = estadoUsuarioDAO;
     }
+
 
     @Override
     public Usuario guardar(Usuario usuario) throws DAOException {
