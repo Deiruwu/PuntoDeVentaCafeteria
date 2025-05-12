@@ -196,11 +196,11 @@ CREATE TABLE IF NOT EXISTS item_orden (
                                           producto_id INTEGER NOT NULL,
                                           tamaño_id INTEGER NOT NULL,
                                           cantidad REAL NOT NULL CHECK (cantidad > 0),
-                                          precio_unitario REAL NOT NULL CHECK (precio_unitario >= 0), -- Precio con factor tamaño aplicado
-                                          precio_con_iva REAL NOT NULL CHECK (precio_con_iva >= 0), -- Precio unitario con IVA incluido
-                                          subtotal REAL NOT NULL CHECK (subtotal >= 0), -- Subtotal sin IVA
+                                          precio_unitario REAL CHECK (precio_unitario >= 0), -- Precio con factor tamaño aplicado
+                                          precio_con_iva REAL CHECK (precio_con_iva >= 0), -- Precio unitario con IVA incluido
+                                          subtotal REAL CHECK (subtotal >= 0), -- Subtotal sin IVA
                                           iva REAL DEFAULT 0 CHECK (iva >= 0), -- IVA del ítem
-                                          total REAL NOT NULL CHECK (total >= 0), -- Total con IVA
+                                          total REAL CHECK (total >= 0), -- Total con IVA
                                           notas TEXT,
                                           fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                           fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -421,43 +421,48 @@ END;
 
 -- Trigger para calcular precio con IVA, subtotal y total en item_orden al actualizar
 CREATE TRIGGER IF NOT EXISTS calculate_item_valores_update
-    BEFORE INSERT ON item_orden
+    BEFORE UPDATE ON item_orden
+    FOR EACH ROW
 BEGIN
-    -- Si no se están actualizando valores relevantes, sólo actualizamos lo que viene
+    -- Actualiza todos los valores basados en los nuevos datos
     UPDATE item_orden SET
-                          orden_id = NEW.orden_id,
-                          producto_id = NEW.producto_id,
-                          tamaño_id = NEW.tamaño_id,
-                          cantidad = NEW.cantidad,
+                          precio_unitario = (SELECT producto.precio_base * tamaño_producto.factor_precio
+                                             FROM producto
+                                                      JOIN tamaño_producto ON tamaño_producto.id = NEW.tamaño_id
+                                             WHERE producto.id = NEW.producto_id),
+                          precio_con_iva = (SELECT
+                                                CASE
+                                                    WHEN producto.aplica_iva
+                                                        THEN (producto.precio_base * tamaño_producto.factor_precio) * 1.16
+                                                    ELSE (producto.precio_base * tamaño_producto.factor_precio)
+                                                    END
+                                            FROM producto
+                                                     JOIN tamaño_producto ON tamaño_producto.id = NEW.tamaño_id
+                                            WHERE producto.id = NEW.producto_id),
+                          subtotal = (SELECT (producto.precio_base * tamaño_producto.factor_precio) * NEW.cantidad
+                                      FROM producto
+                                               JOIN tamaño_producto ON tamaño_producto.id = NEW.tamaño_id
+                                      WHERE producto.id = NEW.producto_id),
+                          iva = (SELECT
+                                     CASE
+                                         WHEN producto.aplica_iva
+                                             THEN ((producto.precio_base * tamaño_producto.factor_precio) * NEW.cantidad) * 0.16
+                                         ELSE 0
+                                         END
+                                 FROM producto
+                                          JOIN tamaño_producto ON tamaño_producto.id = NEW.tamaño_id
+                                 WHERE producto.id = NEW.producto_id),
+                          total = (SELECT
+                                       CASE
+                                           WHEN producto.aplica_iva
+                                               THEN ((producto.precio_base * tamaño_producto.factor_precio) * NEW.cantidad) * 1.16
+                                           ELSE (producto.precio_base * tamaño_producto.factor_precio) * NEW.cantidad
+                                           END
+                                   FROM producto
+                                            JOIN tamaño_producto ON tamaño_producto.id = NEW.tamaño_id
+                                   WHERE producto.id = NEW.producto_id),
                           notas = NEW.notas,
                           fecha_actualizacion = CURRENT_TIMESTAMP
-    WHERE id = OLD.id;
-
-    -- Luego recalculamos los valores monetarios
-    UPDATE item_orden SET
-                          precio_unitario = (SELECT p.precio_base * t.factor_precio
-                                             FROM producto p
-                                                      JOIN tamaño_producto t ON t.id = item_orden.tamaño_id
-                                             WHERE p.id = item_orden.producto_id),
-                          subtotal = (SELECT (p.precio_base * t.factor_precio) * item_orden.cantidad
-                                      FROM producto p
-                                               JOIN tamaño_producto t ON t.id = item_orden.tamaño_id
-                                      WHERE p.id = item_orden.producto_id)
-    WHERE id = OLD.id;
-
-    -- Finalmente calculamos IVA y totales
-    UPDATE item_orden SET
-                          iva = CASE
-                                    WHEN (SELECT p.aplica_iva FROM producto p WHERE p.id = item_orden.producto_id)
-                                        THEN subtotal * 0.16
-                                    ELSE 0
-                              END,
-                          precio_con_iva = CASE
-                                               WHEN (SELECT p.aplica_iva FROM producto p WHERE p.id = item_orden.producto_id)
-                                                   THEN precio_unitario * 1.16
-                                               ELSE precio_unitario
-                              END,
-                          total = subtotal + iva
     WHERE id = OLD.id;
 END;
 
@@ -646,7 +651,10 @@ INSERT INTO tamaño_producto (id, nombre, factor_precio, es_porcion) VALUES
 
 -- Insertar empleado administrador
 INSERT INTO empleado (id, nombre, apellido, rol_id, imagen_url) VALUES
-    (1, 'Desidere', 'Selene', 1, '/imagenes/empleados/admin.png');
+    (1, 'Desidere', 'Selene', 1, '/imagenes/empleados/admin.png'),
+    (2, 'Guzman', 'Mendoza', 3, '/imagenes/empleados/mesero.png');
+
+
 
 -- Insertar usuario administrador (contraseña: 29Demayo$)
 INSERT INTO usuario (id, empleado_id, nombre_usuario, hash_contraseña, estado_id) VALUES

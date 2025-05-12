@@ -76,6 +76,10 @@ class PanelProductos extends JPanel {
                 BorderFactory.createMatteBorder(0, 0, 1, 0, VistaMesero.COLOR_AZUL),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
+        // Agregar placeholder
+        TextPrompt placeholder = new TextPrompt("Buscar por nombre de producto...", txtBuscar);
+        placeholder.changeAlpha(0.5f); // Transparencia del texto
+        placeholder.changeStyle(Font.ITALIC); // Estilo itálica
 
         btnBuscar = new JButton("Buscar");
         btnBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -92,7 +96,7 @@ class PanelProductos extends JPanel {
         panelSuperior.add(panelBusqueda, BorderLayout.EAST);
 
         // Panel de botones para categorías
-        panelBotonesCategorias = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        panelBotonesCategorias = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 5));
         panelBotonesCategorias.setBackground(VistaMesero.COLOR_CREMA);
         panelBotonesCategorias.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20));
 
@@ -123,13 +127,39 @@ class PanelProductos extends JPanel {
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
+        // Panel principal para organizar los componentes
+        JPanel panelPrincipal = new JPanel(new BorderLayout());
+        panelPrincipal.setBackground(VistaMesero.COLOR_CREMA);
+
+        // Añadir el panel de botones al panel principal
+        panelPrincipal.add(panelBotonesCategorias, BorderLayout.NORTH);
+        panelPrincipal.add(scrollPane, BorderLayout.CENTER);
+
         // Añadir componentes al panel principal
         add(panelSuperior, BorderLayout.NORTH);
-        add(panelBotonesCategorias, BorderLayout.CENTER);
-        add(scrollPane, BorderLayout.SOUTH);
+        add(panelPrincipal, BorderLayout.CENTER);
 
         // Configurar evento de búsqueda
         btnBuscar.addActionListener(e -> buscarProductos());
+
+        // Implementar patrón Observer para actualización inmediata
+        txtBuscar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                buscarProductos();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                buscarProductos();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                buscarProductos();
+            }
+        });
+
         txtBuscar.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -161,7 +191,7 @@ class PanelProductos extends JPanel {
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         boton.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+                BorderFactory.createEmptyBorder(5, 20, 5, 20)
         ));
         return boton;
     }
@@ -175,7 +205,7 @@ class PanelProductos extends JPanel {
                 btn.setForeground(VistaMesero.COLOR_AZUL);
                 btn.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                        BorderFactory.createEmptyBorder(5, 15, 5, 15)
+                        BorderFactory.createEmptyBorder(5, 8, 5, 8)
                 ));
             }
         }
@@ -185,7 +215,7 @@ class PanelProductos extends JPanel {
         categoriaSeleccionada.setForeground(Color.WHITE);
         categoriaSeleccionada.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(VistaMesero.COLOR_AZUL, 1),
-                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
     }
 
@@ -194,6 +224,7 @@ class PanelProductos extends JPanel {
             List<Producto> productos = controladorProductos.obtenerTodosLosProductos();
             listaProductos = new ArrayList<>(productos);
             listaProductosFiltrada = new ArrayList<>(productos);
+
         } catch (DAOException e) {
             JOptionPane.showMessageDialog(this,
                     "Error al cargar los productos: " + e.getMessage(),

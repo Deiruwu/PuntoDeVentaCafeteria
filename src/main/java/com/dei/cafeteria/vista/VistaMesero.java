@@ -5,10 +5,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import com.dei.cafeteria.dao.DAOException;
+import com.dei.cafeteria.dao.EmpleadoDAO;
+import com.dei.cafeteria.dao.RolDAO;
+import com.dei.cafeteria.modelo.Empleado;
+import lombok.Getter;
+
 /**
  * Clase principal que integra todos los componentes del módulo Mesero
  */
 public class VistaMesero extends JFrame {
+
+    private Empleado meseroActual;
 
     // Constantes para colores según la paleta especificada
     public static final Color COLOR_TERRACOTA = new Color(140, 94, 88);  // #8C5E58
@@ -36,7 +44,8 @@ public class VistaMesero extends JFrame {
     // Panel actual mostrado
     private JPanel panelActual;
 
-    public VistaMesero() {
+    public VistaMesero(Empleado meseroActual) {
+        this.meseroActual = meseroActual;
         configurarVentana();
         inicializarComponentes();
         establecerEventos();
@@ -89,7 +98,7 @@ public class VistaMesero extends JFrame {
         // Inicializar los paneles específicos
         panelMesas = new PanelMesas();
         panelProductos = new PanelProductos();
-        panelTomarOrden = new PanelTomarOrden();
+        panelTomarOrden = new PanelTomarOrden(meseroActual);
 
         // Añadir paneles al contenedor principal
         panelContenido.add(panelMesas, "mesas");
@@ -149,8 +158,6 @@ public class VistaMesero extends JFrame {
     }
 
     private void enviarPedido() {
-        // Aquí se integraría con la lógica de negocio para enviar el pedido
-        /*
         if (panelTomarOrden.validarPedido()) {
             JOptionPane.showMessageDialog(this,
                     "Pedido enviado correctamente",
@@ -162,10 +169,10 @@ public class VistaMesero extends JFrame {
                     "No hay un pedido válido para enviar",
                     "Advertencia",
                     JOptionPane.WARNING_MESSAGE);
-        }*/
+        }
     }
 
-    // Método principal para probar la interfaz
+    // Metodo principal para probar la interfaz
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -182,11 +189,20 @@ public class VistaMesero extends JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            RolDAO rolDAO = new RolDAO();
+            EmpleadoDAO empleadoDAO = new EmpleadoDAO(rolDAO);
+            Empleado empleado = null;
+            try {
+                empleado = empleadoDAO.buscarPorId(2);
+            } catch (DAOException e) {
+                throw new RuntimeException(e);
+            }
 
-            VistaMesero vista = new VistaMesero();
+            VistaMesero vista = new VistaMesero(empleado);
             vista.setVisible(true);
         });
     }
+
 }
 
 

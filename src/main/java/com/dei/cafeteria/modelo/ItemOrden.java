@@ -1,5 +1,7 @@
 package com.dei.cafeteria.modelo;
 
+import com.dei.cafeteria.dao.DAOException;
+import com.dei.cafeteria.dao.TamañoProductoDAO;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,4 +24,15 @@ public class ItemOrden {
     private String notas;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    public ItemOrden(Producto producto, int cantidad, int tamañoProductoId) {
+        TamañoProductoDAO tamañoProductoDAO = new TamañoProductoDAO();
+        this.producto = producto;
+        this.cantidad = Double.valueOf(cantidad);
+        try {
+            this.tamaño = tamañoProductoDAO.buscarPorId(tamañoProductoId);
+        } catch (DAOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

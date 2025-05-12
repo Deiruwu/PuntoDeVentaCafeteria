@@ -1,5 +1,11 @@
 package com.dei.cafeteria.vista;
 
+import com.dei.cafeteria.controlador.ControladorMesas;
+import com.dei.cafeteria.controlador.ControladorProductos;
+import com.dei.cafeteria.dao.*;
+import com.dei.cafeteria.modelo.*;
+
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -11,6 +17,8 @@ import java.util.List;
  * Panel para tomar órdenes/pedidos
  */
 class PanelTomarOrden extends JPanel {
+
+    private Empleado meseroActual;
 
     // Componentes de la interfaz
     private JComboBox<String> cmbMesas;
@@ -25,10 +33,11 @@ class PanelTomarOrden extends JPanel {
     // Datos simulados
     private List<Mesa> listaMesas;
     private List<Producto> listaProductos;
-    private List<ElementoPedido> elementosPedido;
+    private List<ItemOrden> elementosPedido;
     private int mesaSeleccionada;
 
-    public PanelTomarOrden() {
+    public PanelTomarOrden(Empleado meseroActual) {
+        this.meseroActual = meseroActual;
         setLayout(new BorderLayout());
         setBackground(VistaMesero.COLOR_CREMA);
         elementosPedido = new ArrayList<>();
@@ -182,35 +191,35 @@ class PanelTomarOrden extends JPanel {
     }
 
     private void cargarDatosPrueba() {
-        // Mesas
-        listaMesas = new ArrayList<>();
-        for (int i = 1; i <= 12; i++) listaMesas.add(new Mesa(i, i % 3 == 0));
-        actualizarComboMesas();
+        ControladorMesas controladorMesas = new ControladorMesas();
+        ControladorProductos controladorProductos = new ControladorProductos();
+        try {
+            listaMesas = controladorMesas.obtenerTodasLasMesas();
+            listaProductos = controladorProductos.obtenerTodosLosProductos();
+        } catch (DAOException e) {
+            throw new RuntimeException(e);
+        }
 
-        // Productos
-        listaProductos = new ArrayList<>();
-        listaProductos.add(new Producto(1, "Café Americano", "Café negro", 25.0, "Bebidas Calientes"));
-        listaProductos.add(new Producto(2, "Capuccino", "Café con espuma", 35.0, "Bebidas Calientes"));
-        listaProductos.add(new Producto(3, "Té Verde", "Té verde natural", 20.0, "Bebidas Calientes"));
+
+        actualizarComboMesas();
         actualizarListaProductos();
     }
 
     private void actualizarComboMesas() {
         cmbMesas.removeAllItems();
         listaMesas.stream()
-                .filter(m -> !m.isOcupada())
+                .filter(m -> m.getEstadoMesa() == 1)
                 .forEach(m -> cmbMesas.addItem("Mesa " + m.getNumero()));
     }
 
     private void actualizarListaProductos() {
         modeloProductosDisponibles.clear();
         listaProductos.forEach(p ->
-                modeloProductosDisponibles.addElement(p.getNombre() + " - $" + p.getPrecio()));
+                modeloProductosDisponibles.addElement(p.getNombre() + " - $" + p.getPrecioBase()));
     }
 
     private void buscarProductos() {
         String termino = txtBuscarProducto.getText().toLowerCase();
-        // Lógica de filtrado (simulada)
         actualizarListaProductos();
     }
 
@@ -221,7 +230,7 @@ class PanelTomarOrden extends JPanel {
         Producto p = listaProductos.get(indice);
         int cantidad = (Integer) spnCantidad.getValue();
 
-        elementosPedido.add(new ElementoPedido(p, cantidad));
+        elementosPedido.add(new ItemOrden(p, cantidad, 1));
         actualizarTablaPedido();
     }
 
@@ -229,8 +238,8 @@ class PanelTomarOrden extends JPanel {
         modeloTablaProductos.setRowCount(0);
         double subtotal = 0;
 
-        for (ElementoPedido ep : elementosPedido) {
-            double precio = ep.getProducto().getPrecio();
+        for (ItemOrden ep : elementosPedido) {
+            double precio = ep.getProducto().getPrecioBase() * ep.getCantidad();
             double totalLinea = precio * ep.getCantidad();
             modeloTablaProductos.addRow(new Object[]{
                     ep.getProducto().getNombre(),
@@ -242,6 +251,85 @@ class PanelTomarOrden extends JPanel {
             subtotal += totalLinea;
         }
         lblSubtotal.setText(String.format("Subtotal: $%.2f", subtotal));
+    }
+
+    public boolean validarPedido() {
+        // Validación 1: Mesa seleccionada
+        if (mesaSeleccionada == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Debe seleccionar una mesa antes de enviar el pedido",
+                    "Mesa no seleccionada",
+                    JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        // Validación 2: Elementos en el pedido
+        if (elementosPedido.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "El pedido no contiene productos",
+                    "Pedido vacío",
+                    JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        // Validación 3: Cantidades válidas en todos los items
+        for (ItemOrden item : elementosPedido) {
+            if (item.getCantidad() <= 0) {
+                JOptionPane.showMessageDialog(this,
+                        "La cantidad debe ser mayor a cero en todos los productos",
+                        "Cantidad inválida",
+                        JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        }
+
+        try {
+            // Obtener mesa y mesero (deberías inyectar el mesero actual)
+            EstadoMesaDAO estadoMesaDAO = new EstadoMesaDAO();
+            MesaDAO mesaDAO = new MesaDAO(estadoMesaDAO);
+            Mesa mesa = mesaDAO.buscarPorId(mesaSeleccionada);
+
+            // Obtener el mesero actual (esto debería venir de la sesión)
+            Empleado mesero = obtenerMeseroActual(); // Implementar este metodo
+
+            // Crear la orden
+            Orden orden = Orden.builder()
+                    .mesa(mesa)
+                    .mesero(mesero)
+                    .notas("") // Puedes agregar un campo para notas
+                    .build();
+
+            // Guardar la orden en la BD
+            OrdenDAO ordenDAO = new OrdenDAO();
+            orden = ordenDAO.guardar(orden);
+
+            // Guardar los items de la orden
+            ItemOrdenDAO itemOrdenDAO = new ItemOrdenDAO();
+            for (ItemOrden item : elementosPedido) {
+                item.setOrden(orden);
+                itemOrdenDAO.guardar(item);
+            }
+
+            return true;
+
+        } catch (DAOException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al guardar el pedido: " + ex.getMessage(),
+                    "Error de base de datos",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    private Empleado obtenerMeseroActual() {
+        return meseroActual;
+    }
+
+    public void limpiarPedido() {
+        elementosPedido.clear();
+        modeloTablaProductos.setRowCount(0);
+        lblSubtotal.setText("Subtotal: $0.00");
+        cmbMesas.setSelectedIndex(0);
     }
 
     private void actualizarMesaSeleccionada() {
@@ -287,65 +375,6 @@ class PanelTomarOrden extends JPanel {
                                                      boolean isSelected, int row, int column) {
             currentRow = row;
             return button;
-        }
-    }
-
-    // Clases de modelo de datos
-    private static class Mesa {
-        private int numero;
-        private boolean ocupada;
-
-        public Mesa(int numero, boolean ocupada) {
-            this.numero = numero;
-            this.ocupada = ocupada;
-        }
-
-        public int getNumero() {
-            return numero;
-        }
-
-        public boolean isOcupada() {
-            return ocupada;
-        }
-    }
-
-    private static class Producto {
-        private int id;
-        private String nombre;
-        private double precio;
-        private String categoria;
-
-        public Producto(int id, String nombre, String descripcion, double precio, String categoria) {
-            this.id = id;
-            this.nombre = nombre;
-            this.precio = precio;
-            this.categoria = categoria;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public double getPrecio() {
-            return precio;
-        }
-    }
-
-    private static class ElementoPedido {
-        private Producto producto;
-        private int cantidad;
-
-        public ElementoPedido(Producto producto, int cantidad) {
-            this.producto = producto;
-            this.cantidad = cantidad;
-        }
-
-        public Producto getProducto() {
-            return producto;
-        }
-
-        public int getCantidad() {
-            return cantidad;
         }
     }
 }

@@ -16,4 +16,7 @@ public class Empleado {
     private String imagenUrl;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    public Empleado(int i, String mesero, String ejemplo, Rol rol) {
+    }
 }
