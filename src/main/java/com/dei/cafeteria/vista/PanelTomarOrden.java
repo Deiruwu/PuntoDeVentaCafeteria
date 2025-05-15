@@ -23,12 +23,13 @@ class PanelTomarOrden extends JPanel {
     // Componentes de la interfaz
     private JComboBox<String> cmbMesas;
     private JTextField txtBuscarProducto;
-    private JList<String> listaProductosDisponibles;
-    private DefaultListModel<String> modeloProductosDisponibles;
+    private JList<Producto> listaProductosDisponibles; // Cambiado a JList<Producto>
+    private DefaultListModel<Producto> modeloProductosDisponibles; // Cambiado a DefaultListModel<Producto>
     private JSpinner spnCantidad;
     private JTable tablaProductosOrden;
     private DefaultTableModel modeloTablaProductos;
     private JLabel lblSubtotal;
+    private JLabel lblStockDisponible; // Nuevo: Etiqueta para mostrar stock
 
     // Datos simulados
     private List<Mesa> listaMesas;
@@ -43,7 +44,7 @@ class PanelTomarOrden extends JPanel {
         elementosPedido = new ArrayList<>();
 
         inicializarComponentes();
-        cargarDatosPrueba();
+        cargarDatos();
     }
 
     private void inicializarComponentes() {
@@ -105,10 +106,13 @@ class PanelTomarOrden extends JPanel {
         panelBusqueda.add(txtBuscarProducto, BorderLayout.CENTER);
         panelBusqueda.add(btnBuscar, BorderLayout.EAST);
 
+        // Cambio del modelo y JList para usar objetos Producto directamente
         modeloProductosDisponibles = new DefaultListModel<>();
         listaProductosDisponibles = new JList<>(modeloProductosDisponibles);
         listaProductosDisponibles.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         listaProductosDisponibles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        // Renderer personalizado para mostrar nombre, precio y stock
+        listaProductosDisponibles.setCellRenderer(new ProductoListCellRenderer());
 
         JScrollPane scrollProductos = new JScrollPane(listaProductosDisponibles);
         scrollProductos.setBorder(null);
@@ -116,8 +120,24 @@ class PanelTomarOrden extends JPanel {
         panelProductos.add(panelBusqueda, BorderLayout.NORTH);
         panelProductos.add(scrollProductos, BorderLayout.CENTER);
 
+        // Panel de información de stock y cantidad - CORREGIDO: Mejor espaciado
+        JPanel panelInfoAgregar = new JPanel(new BorderLayout(10, 0)); // Agregado espacio horizontal
+        panelInfoAgregar.setBackground(VistaMesero.COLOR_CREMA);
+        panelInfoAgregar.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5)); // Agregado padding
+
+        // Panel para mostrar el stock disponible
+        JPanel panelStock = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        panelStock.setBackground(VistaMesero.COLOR_CREMA);
+
+        lblStockDisponible = new JLabel("Stock disponible: -");
+        lblStockDisponible.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblStockDisponible.setForeground(VistaMesero.COLOR_AZUL);
+        lblStockDisponible.setPreferredSize(new Dimension(180, 30)); // Asegurar tamaño fijo
+
+        panelStock.add(lblStockDisponible);
+
         // Panel de cantidad y agregar
-        JPanel panelAgregar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel panelAgregar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0)); // Aumentado el espacio
         panelAgregar.setBackground(VistaMesero.COLOR_CREMA);
 
         JLabel lblCantidad = new JLabel("Cantidad:");
@@ -139,7 +159,10 @@ class PanelTomarOrden extends JPanel {
         panelAgregar.add(spnCantidad);
         panelAgregar.add(btnAgregar);
 
-        panelProductos.add(panelAgregar, BorderLayout.SOUTH);
+        panelInfoAgregar.add(panelStock, BorderLayout.WEST);
+        panelInfoAgregar.add(panelAgregar, BorderLayout.EAST);
+
+        panelProductos.add(panelInfoAgregar, BorderLayout.SOUTH);
 
         // Panel de pedido
         JPanel panelPedido = new JPanel(new BorderLayout());
@@ -149,7 +172,15 @@ class PanelTomarOrden extends JPanel {
                 new Object[]{"Producto", "Precio", "Cantidad", "Subtotal", ""}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 4;
+                return column == 4; // Solo la columna del botón eliminar es editable
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 4) {
+                    return Button.class; // La columna 4 es de tipo botón
+                }
+                return Object.class;
             }
         };
 
@@ -159,9 +190,8 @@ class PanelTomarOrden extends JPanel {
         tablaProductosOrden.setRowHeight(30);
         tablaProductosOrden.setShowGrid(false);
 
-        // Configurar botón eliminar
         tablaProductosOrden.getColumnModel().getColumn(4).setCellRenderer(new BotonEliminarRenderer());
-        tablaProductosOrden.getColumnModel().getColumn(4).setCellEditor(new BotonEliminarEditor());
+        tablaProductosOrden.getColumnModel().getColumn(4).setCellEditor(new BotonEliminarEditor(tablaProductosOrden));
 
         JScrollPane scrollPedido = new JScrollPane(tablaProductosOrden);
         scrollPedido.setBorder(null);
@@ -188,9 +218,35 @@ class PanelTomarOrden extends JPanel {
         btnBuscar.addActionListener(e -> buscarProductos());
         btnAgregar.addActionListener(e -> agregarProducto());
         cmbMesas.addActionListener(e -> actualizarMesaSeleccionada());
+
+        // Evento para mostrar el stock cuando se selecciona un producto
+        listaProductosDisponibles.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                Producto productoSeleccionado = listaProductosDisponibles.getSelectedValue();
+                if (productoSeleccionado != null) {
+                    double stock = productoSeleccionado.getStockActual();
+
+                    lblStockDisponible.setText("Stock disponible: " + stock);
+
+                    SpinnerNumberModel modelo = (SpinnerNumberModel) spnCantidad.getModel();
+
+                    // Asegurar mínimo 1 y máximo stock (o 1 si stock es 0 o menor)
+                    int nuevoMaximo = (int) Math.max(1, stock);
+                    modelo.setMaximum(nuevoMaximo);
+
+                    // Si el valor actual excede el nuevo máximo, ajustarlo
+                    int valorActual = (Integer) modelo.getValue();
+                    if (valorActual > nuevoMaximo) {
+                        modelo.setValue(nuevoMaximo);
+                    }
+                } else {
+                    lblStockDisponible.setText("Stock disponible: -");
+                }
+            }
+        });
     }
 
-    private void cargarDatosPrueba() {
+    private void cargarDatos() {
         ControladorMesas controladorMesas = new ControladorMesas();
         ControladorProductos controladorProductos = new ControladorProductos();
         try {
@@ -199,7 +255,6 @@ class PanelTomarOrden extends JPanel {
         } catch (DAOException e) {
             throw new RuntimeException(e);
         }
-
 
         actualizarComboMesas();
         actualizarListaProductos();
@@ -214,23 +269,59 @@ class PanelTomarOrden extends JPanel {
 
     private void actualizarListaProductos() {
         modeloProductosDisponibles.clear();
-        listaProductos.forEach(p ->
-                modeloProductosDisponibles.addElement(p.getNombre() + " - $" + p.getPrecioBase()));
+        listaProductos.stream()
+                .filter(p -> p.getStockActual() > 0) // Solo mostrar productos con stock
+                .forEach(modeloProductosDisponibles::addElement);
     }
 
     private void buscarProductos() {
         String termino = txtBuscarProducto.getText().toLowerCase();
-        actualizarListaProductos();
+        modeloProductosDisponibles.clear();
+
+        listaProductos.stream()
+                .filter(p -> p.getStockActual() > 0)
+                .filter(p -> p.getNombre().toLowerCase().contains(termino))
+                .forEach(modeloProductosDisponibles::addElement);
     }
 
     private void agregarProducto() {
-        int indice = listaProductosDisponibles.getSelectedIndex();
-        if (indice == -1) return;
+        Producto productoSeleccionado = listaProductosDisponibles.getSelectedValue();
+        if (productoSeleccionado == null) return;
 
-        Producto p = listaProductos.get(indice);
         int cantidad = (Integer) spnCantidad.getValue();
 
-        elementosPedido.add(new ItemOrden(p, cantidad, 1));
+        // Validar que hay suficiente stock
+        if (cantidad > productoSeleccionado.getStockActual()) {
+            JOptionPane.showMessageDialog(this,
+                    "No hay suficiente stock disponible. Stock actual: " + productoSeleccionado.getStockActual(),
+                    "Stock insuficiente",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        boolean encontrado = false;
+        for (ItemOrden item : elementosPedido) {
+            if (item.getProducto().getId() == productoSeleccionado.getId()) {
+                // Verificar si hay suficiente stock para la nueva cantidad total
+                double nuevaCantidad = item.getCantidad() + cantidad;
+                if (nuevaCantidad > productoSeleccionado.getStockActual()) {
+                    JOptionPane.showMessageDialog(this,
+                            "No hay suficiente stock disponible. Stock actual: " + productoSeleccionado.getStockActual(),
+                            "Stock insuficiente",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                item.setCantidad(nuevaCantidad);
+                encontrado = true;
+                break;
+            }
+        }
+
+        if (!encontrado) {
+            elementosPedido.add(new ItemOrden(productoSeleccionado, cantidad, 1));
+        }
+
         actualizarTablaPedido();
     }
 
@@ -238,18 +329,21 @@ class PanelTomarOrden extends JPanel {
         modeloTablaProductos.setRowCount(0);
         double subtotal = 0;
 
-        for (ItemOrden ep : elementosPedido) {
-            double precio = ep.getProducto().getPrecioBase() * ep.getCantidad();
-            double totalLinea = precio * ep.getCantidad();
+        for (ItemOrden item : elementosPedido) {
+            double precioUnitario = item.getProducto().getPrecioBase();
+            double totalLinea = precioUnitario * item.getCantidad();
+
             modeloTablaProductos.addRow(new Object[]{
-                    ep.getProducto().getNombre(),
-                    "$" + precio,
-                    ep.getCantidad(),
-                    "$" + totalLinea,
+                    item.getProducto().getNombre(),
+                    "$" + String.format("%.2f", precioUnitario),
+                    item.getCantidad(),
+                    "$" + String.format("%.2f", totalLinea), // Total línea = precio unitario * cantidad
                     "Eliminar"
             });
+
             subtotal += totalLinea;
         }
+
         lblSubtotal.setText(String.format("Subtotal: $%.2f", subtotal));
     }
 
@@ -281,6 +375,16 @@ class PanelTomarOrden extends JPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return false;
             }
+
+            // Validación 4: Stock suficiente
+            if (item.getCantidad() > item.getProducto().getStockActual()) {
+                JOptionPane.showMessageDialog(this,
+                        "No hay suficiente stock de " + item.getProducto().getNombre() +
+                                ". Stock disponible: " + item.getProducto().getStockActual(),
+                        "Stock insuficiente",
+                        JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
         }
 
         try {
@@ -303,11 +407,18 @@ class PanelTomarOrden extends JPanel {
             OrdenDAO ordenDAO = new OrdenDAO();
             orden = ordenDAO.guardar(orden);
 
-            // Guardar los items de la orden
+            // Guardar los items de la orden y actualizar stock
             ItemOrdenDAO itemOrdenDAO = new ItemOrdenDAO();
+            ProductoDAO productoDAO = new ProductoDAO();
+
             for (ItemOrden item : elementosPedido) {
                 item.setOrden(orden);
                 itemOrdenDAO.guardar(item);
+
+                // Actualizar stock del producto
+                Producto producto = item.getProducto();
+                producto.setStockActual(producto.getStockActual() - item.getCantidad());
+                productoDAO.actualizar(producto);
             }
 
             return true;
@@ -339,7 +450,31 @@ class PanelTomarOrden extends JPanel {
         }
     }
 
-    // Clases internas para renderizado de botones
+    private void eliminarProductoDePedido(int indice) {
+        if (indice >= 0 && indice < elementosPedido.size()) {
+            elementosPedido.remove(indice);
+            actualizarTablaPedido();
+        }
+    }
+
+    // Renderer personalizado para mostrar productos con su stock
+    private class ProductoListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                      int index, boolean isSelected,
+                                                      boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof Producto) {
+                Producto producto = (Producto) value;
+                setText(producto.getNombre() + " - $" + producto.getPrecioBase());
+            }
+
+            return this;
+        }
+    }
+
+    // Clases internas para renderizado de botones - CORREGIDA
     private class BotonEliminarRenderer extends JButton implements TableCellRenderer {
         public BotonEliminarRenderer() {
             setOpaque(true);
@@ -355,26 +490,47 @@ class PanelTomarOrden extends JPanel {
         }
     }
 
+    // CORREGIDO: Implementación del editor de botón eliminar
     private class BotonEliminarEditor extends DefaultCellEditor {
         private JButton button;
+        private boolean isPushed;
+        private JTable tabla;
         private int currentRow;
 
-        public BotonEliminarEditor() {
+        public BotonEliminarEditor(JTable tabla) {
             super(new JCheckBox());
+            this.tabla = tabla;
             button = new JButton("Eliminar");
             button.setBackground(VistaMesero.COLOR_TERRACOTA);
             button.setForeground(Color.WHITE);
             button.setBorderPainted(false);
+            button.setFocusPainted(false);
+
             button.addActionListener(e -> {
-                elementosPedido.remove(currentRow);
-                actualizarTablaPedido();
+                fireEditingStopped();
+                // Al hacer clic en el botón, se elimina el producto de la lista
+                eliminarProductoDePedido(currentRow);
             });
         }
 
+        @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                                                      boolean isSelected, int row, int column) {
+            isPushed = true;
             currentRow = row;
             return button;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            isPushed = false;
+            return "Eliminar";
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            isPushed = false;
+            return super.stopCellEditing();
         }
     }
 }

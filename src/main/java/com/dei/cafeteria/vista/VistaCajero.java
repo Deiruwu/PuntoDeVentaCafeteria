@@ -1,6 +1,5 @@
 package com.dei.cafeteria.vista;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -10,13 +9,12 @@ import com.dei.cafeteria.dao.EmpleadoDAO;
 import com.dei.cafeteria.dao.RolDAO;
 import com.dei.cafeteria.modelo.Empleado;
 
-
 /**
- * Clase principal que integra todos los componentes del módulo Mesero
+ * Clase principal que integra todos los componentes del módulo Cajero
  */
-public class VistaMesero extends JFrame {
+public class VistaCajero extends JFrame {
 
-    private Empleado meseroActual;
+    private Empleado cajeroActual;
 
     // Constantes para colores según la paleta especificada
     public static final Color COLOR_TERRACOTA = new Color(140, 94, 88);  // #8C5E58
@@ -31,29 +29,30 @@ public class VistaMesero extends JFrame {
     private JPanel panelMenu;
 
     // Componentes del menú
-    private JButton btnMesas;
-    private JButton btnProductos;
-    private JButton btnTomarOrden;
-    private JButton btnEnviarPedido;
+    private JButton btnOrdenes;
+    private JButton btnPagos;
+    private JButton btnHistorial;
+    private JButton btnReportes;
 
     // Paneles de contenido
-    private PanelMesas panelMesas;
-    private PanelProductos panelProductos;
-    private PanelTomarOrden panelTomarOrden;
+    private PanelOrdenesPendientes panelOrdenesPendientes;
+    private PanelProcesarPago panelProcesarPago;
+    //private PanelHistorialPagos panelHistorialPagos;
+    //private PanelReportes panelReportes;
 
     // Panel actual mostrado
     private JPanel panelActual;
 
-    public VistaMesero(Empleado meseroActual) {
-        this.meseroActual = meseroActual;
+    public VistaCajero(Empleado cajeroActual) {
+        this.cajeroActual = cajeroActual;
         configurarVentana();
         inicializarComponentes();
         establecerEventos();
-        mostrarPanel("mesas"); // Iniciar con panel de mesas
+        mostrarPanel("ordenes"); // Iniciar con panel de órdenes pendientes
     }
 
     private void configurarVentana() {
-        setTitle("Cafetería - Módulo Mesero");
+        setTitle("Cafetería - Módulo Cajero");
         setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -73,22 +72,22 @@ public class VistaMesero extends JFrame {
         panelMenu.setPreferredSize(new Dimension(200, getHeight()));
 
         // Crear botones del menú con estilo personalizado
-        btnMesas = crearBotonMenu("Mesas");
-        btnProductos = crearBotonMenu("Productos");
-        btnTomarOrden = crearBotonMenu("Tomar Orden");
-        btnEnviarPedido = crearBotonMenu("Enviar Pedido");
+        btnOrdenes = crearBotonMenu("Órdenes Pendientes");
+        btnPagos = crearBotonMenu("Procesar Pago");
+        btnHistorial = crearBotonMenu("Historial de Pagos");
+        btnReportes = crearBotonMenu("Reportes");
 
         // Añadir botones al menú
         panelMenu.add(Box.createVerticalStrut(20));
-        panelMenu.add(crearLabelMenu("MESERO"));
+        panelMenu.add(crearLabelMenu("CAJERO"));
         panelMenu.add(Box.createVerticalStrut(40));
-        panelMenu.add(btnMesas);
+        panelMenu.add(btnOrdenes);
         panelMenu.add(Box.createVerticalStrut(15));
-        panelMenu.add(btnProductos);
+        panelMenu.add(btnPagos);
         panelMenu.add(Box.createVerticalStrut(15));
-        panelMenu.add(btnTomarOrden);
+        panelMenu.add(btnHistorial);
         panelMenu.add(Box.createVerticalStrut(15));
-        panelMenu.add(btnEnviarPedido);
+        panelMenu.add(btnReportes);
         panelMenu.add(Box.createVerticalGlue());
 
         // Crear panel de contenido principal (donde se cargarán las diferentes vistas)
@@ -96,14 +95,16 @@ public class VistaMesero extends JFrame {
         panelContenido.setBackground(COLOR_CREMA);
 
         // Inicializar los paneles específicos
-        panelMesas = new PanelMesas();
-        panelProductos = new PanelProductos();
-        panelTomarOrden = new PanelTomarOrden(meseroActual);
+        panelOrdenesPendientes = new PanelOrdenesPendientes();
+        panelProcesarPago = new PanelProcesarPago(cajeroActual);
+        //panelHistorialPagos = new PanelHistorialPagos();
+        //panelReportes = new PanelReportes();
 
         // Añadir paneles al contenedor principal
-        panelContenido.add(panelMesas, "mesas");
-        panelContenido.add(panelProductos, "productos");
-        panelContenido.add(panelTomarOrden, "tomarOrden");
+        panelContenido.add(panelOrdenesPendientes, "ordenes");
+        panelContenido.add(panelProcesarPago, "pagos");
+        //panelContenido.add(panelHistorialPagos, "historial");
+        //panelContenido.add(panelReportes, "reportes");
 
         // Añadir componentes al panel principal
         panelPrincipal.add(panelMenu, BorderLayout.WEST);
@@ -146,34 +147,27 @@ public class VistaMesero extends JFrame {
     }
 
     private void establecerEventos() {
-        btnMesas.addActionListener(e -> mostrarPanel("mesas"));
-        btnProductos.addActionListener(e -> mostrarPanel("productos"));
-        btnTomarOrden.addActionListener(e -> mostrarPanel("tomarOrden"));
-        btnEnviarPedido.addActionListener(e -> enviarPedido());
+        btnOrdenes.addActionListener(e -> mostrarPanel("ordenes"));
+        btnPagos.addActionListener(e -> mostrarPanel("pagos"));
+        btnHistorial.addActionListener(e -> mostrarPanel("historial"));
+        btnReportes.addActionListener(e -> mostrarPanel("reportes"));
     }
 
     private void mostrarPanel(String nombrePanel) {
         CardLayout cl = (CardLayout) panelContenido.getLayout();
         cl.show(panelContenido, nombrePanel);
-    }
-
-    private void enviarPedido() {
-        if (panelTomarOrden.validarPedido()) {
-            JOptionPane.showMessageDialog(this,
-                    "Pedido enviado correctamente",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-            panelTomarOrden.limpiarPedido();
-            panelMesas.recargarMesas();
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "No hay un pedido válido para enviar",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE);
+        
+        // Recargar datos según el panel mostrado
+        if (nombrePanel.equals("ordenes")) {
+            panelOrdenesPendientes.cargarOrdenesPendientes();
+        } else if (nombrePanel.equals("pagos")) {
+            panelProcesarPago.actualizarOrdenSeleccionada();
+        } else if (nombrePanel.equals("historial")) {
+            //panelHistorialPagos.cargarHistorialPagos();
         }
     }
 
-    // Metodo principal para probar la interfaz
+    // Método principal para probar la interfaz
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -190,20 +184,18 @@ public class VistaMesero extends JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            
             RolDAO rolDAO = new RolDAO();
             EmpleadoDAO empleadoDAO = new EmpleadoDAO(rolDAO);
             Empleado empleado = null;
             try {
-                empleado = empleadoDAO.buscarPorId(2);
+                empleado = empleadoDAO.buscarPorId(1); // Asumiendo que el ID 1 corresponde a un cajero
             } catch (DAOException e) {
                 throw new RuntimeException(e);
             }
 
-            VistaMesero vista = new VistaMesero(empleado);
+            VistaCajero vista = new VistaCajero(empleado);
             vista.setVisible(true);
         });
     }
-
 }
-
-

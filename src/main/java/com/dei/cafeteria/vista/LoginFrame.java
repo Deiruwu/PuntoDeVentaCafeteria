@@ -5,6 +5,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 
 import com.dei.cafeteria.dao.UsuarioDAO;
 import com.dei.cafeteria.dao.RolDAO;
@@ -30,6 +33,13 @@ public class LoginFrame extends JFrame {
     private static final Color COLOR_PLACEHOLDER = new Color(120, 120, 120);  // Gris para placeholder
     private static final Color COLOR_BLANCO = new Color(255, 255, 255);       // Blanco puro
 
+    // Ruta absoluta para el logo
+    private static final String RUTA_LOGO = "imagenes/logo.png";
+
+    // Íconos Nerd Font para campos de usuario y contraseña
+    private static final String ICONO_USUARIO = "\uE61B"; // Ícono de café/usuario
+    private static final String ICONO_PASSWORD = "\uDB80\uDF3E"; // Ícono de candado
+
     // Componentes de la interfaz
     private JTextField txtUsuario;
     private JPasswordField txtPassword;
@@ -37,6 +47,8 @@ public class LoginFrame extends JFrame {
     private JButton btnSalir;
     private JPanel panelFondo;
     private JLabel lblImagenLogo;
+    private JLabel lblIconoUsuario;
+    private JLabel lblIconoPassword;
 
     // Servicio de autentificación
     private ServicioDeAutentificacion servicioAutentificacion;
@@ -45,7 +57,7 @@ public class LoginFrame extends JFrame {
      * Constructor de la ventana de login
      */
     public LoginFrame() {
-        setTitle("Tierra & Humo - Inicio de Sesión");
+        setTitle("Inicio de Sesión");
         setSize(900, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -54,6 +66,9 @@ public class LoginFrame extends JFrame {
         // Inicializar el servicio de autentificación
         inicializarServicioAutentificacion();
 
+        // Cargar fuente Nerd Font
+        cargarFuenteNerdFont();
+
         // Configurar el fondo
         configurarPanelFondo();
 
@@ -61,6 +76,40 @@ public class LoginFrame extends JFrame {
         initComponents();
 
         setVisible(true);
+    }
+
+    /**
+     * Carga la fuente JetBrainsMono Nerd Font
+     */
+    private Font fuenteNerd;
+
+    private void cargarFuenteNerdFont() {
+        try {
+            // Intenta cargar la fuente JetBrainsMono Nerd Font Mono
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            String[] fontNames = ge.getAvailableFontFamilyNames();
+
+            String fontName = null;
+            // Buscar posibles nombres de la fuente JetBrainsMono Nerd Font
+            for (String name : fontNames) {
+                if (name.contains("JetBrainsMono") && (name.contains("Nerd") || name.contains("NFM"))) {
+                    fontName = name;
+                    break;
+                }
+            }
+
+            // Si se encontró la fuente, usarla
+            if (fontName != null) {
+                fuenteNerd = new Font(fontName, Font.PLAIN, 18);
+            } else {
+                // Si no se encuentra, usar una fuente monoespaciada por defecto
+                fuenteNerd = new Font(Font.MONOSPACED, Font.PLAIN, 18);
+                System.out.println("Advertencia: No se encontró JetBrainsMono Nerd Font. Usando fuente alternativa.");
+            }
+        } catch (Exception e) {
+            fuenteNerd = new Font(Font.MONOSPACED, Font.PLAIN, 18);
+            System.out.println("Error al cargar la fuente: " + e.getMessage());
+        }
     }
 
     /**
@@ -136,22 +185,25 @@ public class LoginFrame extends JFrame {
         panelLogin.setBounds(250, 80, 400, 440);
         panelLogin.setOpaque(false);
 
-        // Panel para la imagen del logo (cuadro blanco simple)
-        lblImagenLogo = new JLabel("Insertar Imagen");
-        lblImagenLogo.setForeground(COLOR_TEXTO);
-        lblImagenLogo.setHorizontalAlignment(SwingConstants.CENTER);
-        lblImagenLogo.setVerticalAlignment(SwingConstants.CENTER);
-        lblImagenLogo.setBounds(150, 30, 100, 100);
-        lblImagenLogo.setBorder(BorderFactory.createLineBorder(COLOR_DETALLE, 1));
-        lblImagenLogo.setBackground(COLOR_BLANCO);
-        lblImagenLogo.setOpaque(true);
+        // Cargar y mostrar el logo desde la ruta absoluta
+        try {
+            BufferedImage imgLogo = ImageIO.read(new File(RUTA_LOGO));
+            Image scaledImage = imgLogo.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            lblImagenLogo = new JLabel(new ImageIcon(scaledImage));
+        } catch (Exception e) {
+            // Si no se puede cargar la imagen, mostrar un marcador de posición
+            lblImagenLogo = new JLabel("Logo");
+            lblImagenLogo.setForeground(COLOR_TEXTO);
+            lblImagenLogo.setHorizontalAlignment(SwingConstants.CENTER);
+            lblImagenLogo.setVerticalAlignment(SwingConstants.CENTER);
+            lblImagenLogo.setBorder(BorderFactory.createLineBorder(COLOR_DETALLE, 1));
+            lblImagenLogo.setBackground(COLOR_BLANCO);
+            lblImagenLogo.setOpaque(true);
+            lblImagenLogo.setSize(250, 250);
+            System.out.println("Error al cargar el logo: " + e.getMessage());
+        }
 
-        // Título "Tierra & Humo"
-        JLabel lblTitulo = new JLabel("Tierra & Humo");
-        lblTitulo.setBounds(0, 150, 400, 40);
-        lblTitulo.setForeground(COLOR_TEXTO);
-        lblTitulo.setFont(new Font("Serif", Font.BOLD, 32));
-        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+        lblImagenLogo.setBounds(100, 0, 200, 200);
 
         // Eslogan "Respira lento, bebe hondo."
         JLabel lblEslogan = new JLabel("Respira lento, bebe hondo.");
@@ -166,12 +218,43 @@ public class LoginFrame extends JFrame {
         separator.setForeground(COLOR_DETALLE);
         separator.setBackground(COLOR_DETALLE);
 
-        // Campos de texto con estilo minimalista y placeholder
-        txtUsuario = createPlaceholderTextField("Usuario");
-        txtUsuario.setBounds(75, 250, 250, 40);
+        // Panel para el campo de usuario con icono
+        JPanel panelUsuario = new JPanel(new BorderLayout());
+        panelUsuario.setBounds(75, 250, 250, 40);
+        panelUsuario.setOpaque(false);
 
+        // Icono de usuario con Nerd Font
+        lblIconoUsuario = new JLabel(ICONO_USUARIO);
+        lblIconoUsuario.setFont(new Font("fuenteNerd", 0, 20));
+        lblIconoUsuario.setForeground(COLOR_DETALLE);
+        lblIconoUsuario.setHorizontalAlignment(SwingConstants.CENTER);
+        lblIconoUsuario.setPreferredSize(new Dimension(40, 40));
+
+        // Campo de texto de usuario
+        txtUsuario = createPlaceholderTextField("Usuario");
+
+        // Agregar componentes al panel de usuario
+        panelUsuario.add(lblIconoUsuario, BorderLayout.WEST);
+        panelUsuario.add(txtUsuario, BorderLayout.CENTER);
+
+        // Panel para el campo de contraseña con icono
+        JPanel panelPassword = new JPanel(new BorderLayout());
+        panelPassword.setBounds(75, 310, 250, 40);
+        panelPassword.setOpaque(false);
+
+        // Icono de candado con Nerd Font
+        lblIconoPassword = new JLabel(ICONO_PASSWORD);
+        lblIconoPassword.setFont(new Font("fuenteNerd", 0, 20));
+        lblIconoPassword.setForeground(COLOR_DETALLE);
+        lblIconoPassword.setHorizontalAlignment(SwingConstants.CENTER);
+        lblIconoPassword.setPreferredSize(new Dimension(40, 40));
+
+        // Campo de texto de contraseña
         txtPassword = createPlaceholderPasswordField("Contraseña");
-        txtPassword.setBounds(75, 310, 250, 40);
+
+        // Agregar componentes al panel de contraseña
+        panelPassword.add(lblIconoPassword, BorderLayout.WEST);
+        panelPassword.add(txtPassword, BorderLayout.CENTER);
 
         // Botones con estilo ámbar luminoso
         btnIngresar = createStyledButton("INGRESAR", COLOR_BOTON);
@@ -182,11 +265,10 @@ public class LoginFrame extends JFrame {
 
         // Agregar componentes al panel
         panelLogin.add(lblImagenLogo);
-        panelLogin.add(lblTitulo);
         panelLogin.add(lblEslogan);
         panelLogin.add(separator);
-        panelLogin.add(txtUsuario);
-        panelLogin.add(txtPassword);
+        panelLogin.add(panelUsuario);
+        panelLogin.add(panelPassword);
         panelLogin.add(btnIngresar);
         panelLogin.add(btnSalir);
 
@@ -229,6 +311,11 @@ public class LoginFrame extends JFrame {
                 textField.setBorder(BorderFactory.createCompoundBorder(
                         new MatteBorder(0, 0, 2, 0, COLOR_BOTON),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+
+                // Cambia el color del icono cuando el campo tiene foco
+                if (textField == txtUsuario) {
+                    lblIconoUsuario.setForeground(COLOR_BOTON);
+                }
             }
 
             @Override
@@ -241,6 +328,11 @@ public class LoginFrame extends JFrame {
                 textField.setBorder(BorderFactory.createCompoundBorder(
                         new MatteBorder(0, 0, 2, 0, COLOR_DETALLE),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+
+                // Restaura el color del icono cuando el campo pierde el foco
+                if (textField == txtUsuario) {
+                    lblIconoUsuario.setForeground(COLOR_DETALLE);
+                }
             }
         });
 
@@ -281,6 +373,9 @@ public class LoginFrame extends JFrame {
                 passwordField.setBorder(BorderFactory.createCompoundBorder(
                         new MatteBorder(0, 0, 2, 0, COLOR_BOTON),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+
+                // Cambia el color del icono cuando el campo tiene foco
+                lblIconoPassword.setForeground(COLOR_BOTON);
             }
 
             @Override
@@ -294,6 +389,9 @@ public class LoginFrame extends JFrame {
                 passwordField.setBorder(BorderFactory.createCompoundBorder(
                         new MatteBorder(0, 0, 2, 0, COLOR_DETALLE),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+
+                // Restaura el color del icono cuando el campo pierde el foco
+                lblIconoPassword.setForeground(COLOR_DETALLE);
             }
         });
 
@@ -367,6 +465,16 @@ public class LoginFrame extends JFrame {
                 }
             }
         });
+
+        // También permitir login con Enter desde el campo de usuario
+        txtUsuario.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    txtPassword.requestFocus();
+                }
+            }
+        });
     }
 
     /**
@@ -395,7 +503,7 @@ public class LoginFrame extends JFrame {
             Usuario usuarioAutenticado = servicioAutentificacion.autenticar(usuario, password);
 
             if (usuarioAutenticado != null) {
-                mostrarMensaje("¡Bienvenido, " + usuarioAutenticado.getEmpleado().getNombre() + "!",
+                mostrarMensaje("¡Hola, " + usuarioAutenticado.getEmpleado().getNombre() + "!",
                         "Acceso Correcto", JOptionPane.INFORMATION_MESSAGE);
 
                 // Abrir la ventana principal según el tipo de usuario

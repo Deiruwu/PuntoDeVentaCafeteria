@@ -4,12 +4,13 @@ import com.dei.cafeteria.controlador.ControladorProductos;
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.modelo.Producto;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -361,15 +362,135 @@ class PanelProductos extends JPanel {
     }
 
     private JPanel crearPanelProducto(Producto producto) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        JPanel panel = new JPanel(new BorderLayout(10, 0));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100)); // Aumentado para acomodar la imagen
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
 
-        // Panel izquierdo (nombre y descripción)
+        // Panel para la imagen con efecto de zoom
+        JLayeredPane panelImagenZoom = new JLayeredPane();
+        panelImagenZoom.setPreferredSize(new Dimension(80, 80));
+
+        JPanel panelImagen = new JPanel(new BorderLayout());
+        panelImagen.setBackground(Color.WHITE);
+        panelImagen.setBounds(0, 0, 80, 80);
+        panelImagen.setBorder(BorderFactory.createLineBorder(new Color(240, 240, 240), 1));
+
+        // Cargar la imagen del producto
+        JLabel lblImagen = new JLabel();
+        lblImagen.setHorizontalAlignment(JLabel.CENTER);
+        lblImagen.setVerticalAlignment(JLabel.CENTER);
+
+        // Para el efecto de zoom
+        final JLabel lblImagenZoom = new JLabel();
+        lblImagenZoom.setHorizontalAlignment(JLabel.CENTER);
+        lblImagenZoom.setVerticalAlignment(JLabel.CENTER);
+        lblImagenZoom.setVisible(false);
+
+        // Panel para la imagen ampliada
+        JPanel panelZoom = new JPanel(new BorderLayout());
+        panelZoom.setOpaque(false);
+        panelZoom.setBounds(-50, -50, 180, 180); // Panel más grande para mostrar la imagen ampliada
+        panelZoom.setVisible(false);
+        panelZoom.add(lblImagenZoom, BorderLayout.CENTER);
+
+        BufferedImage originalImage = null;
+        boolean tieneImagen = false;
+
+        try {
+            // Procesar la URL de la imagen
+            String rutaImagen = producto.getImagenUrl();
+            if (rutaImagen != null && !rutaImagen.trim().isEmpty()) {
+                // Convertir a ruta absoluta si es necesario
+                File imgFile = obtenerArchivoImagen(rutaImagen);
+
+                if (imgFile.exists()) {
+                    // Cargar la imagen original
+                    originalImage = ImageIO.read(imgFile);
+                    if (originalImage != null) {
+                        tieneImagen = true;
+                        // Imagen para visualización normal
+                        Image scaledImage = originalImage.getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+                        lblImagen.setIcon(new ImageIcon(scaledImage));
+
+                        // Imagen para efecto de zoom
+                        Image zoomedImage = originalImage.getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+                        lblImagenZoom.setIcon(new ImageIcon(zoomedImage));
+                    }
+                } else {
+                    // Imagen no encontrada, mostrar un placeholder
+                    lblImagen.setText("Sin imagen");
+                    lblImagen.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+                    lblImagen.setForeground(Color.GRAY);
+                }
+            } else {
+                // No hay URL de imagen
+                lblImagen.setText("Sin imagen");
+                lblImagen.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+                lblImagen.setForeground(Color.GRAY);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            lblImagen.setText("Error");
+            lblImagen.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+            lblImagen.setForeground(Color.RED);
+        }
+
+        // Si hay imagen, configurar el efecto de zoom
+        if (tieneImagen) {
+            // Agregar efecto de zoom al pasar el ratón
+            panelImagen.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    panelZoom.setVisible(true);
+                    panelImagen.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    panelZoom.setVisible(false);
+                    panelImagen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            });
+
+            // Efecto de seguimiento del cursor
+            panelImagen.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    if (panelZoom.isVisible()) {
+                        // Calcular posición del zoom basada en la posición del ratón
+                        // Ajustar para que la imagen ampliada siga fluídamente el cursor
+                        int x = e.getX() - panelZoom.getWidth() / 2;
+                        int y = e.getY() - panelZoom.getHeight() / 2;
+
+                        // Añadir un poco de suavizado para evitar movimientos bruscos
+                        int smoothX = Math.max(-60, Math.min(x, 20));
+                        int smoothY = Math.max(-60, Math.min(y, 20));
+
+                        panelZoom.setBounds(smoothX, smoothY, 180, 180);
+                    }
+                }
+            });
+        }
+
+        panelImagen.add(lblImagen, BorderLayout.CENTER);
+
+        // Añadir componentes al panel con capas
+        panelImagenZoom.add(panelImagen, JLayeredPane.DEFAULT_LAYER);
+        panelImagenZoom.add(panelZoom, JLayeredPane.POPUP_LAYER);
+
+        // Efecto de sombra para el panel de zoom
+        if (tieneImagen) {
+            panelZoom.setBorder(new CompoundBorder(
+                    BorderFactory.createLineBorder(new Color(0, 0, 0, 100), 1),
+                    BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            ));
+        }
+
+        // Panel central (nombre y descripción)
         JPanel panelInfo = new JPanel(new GridLayout(2, 1));
         panelInfo.setBackground(Color.WHITE);
 
@@ -395,16 +516,18 @@ class PanelProductos extends JPanel {
         panelPrecio.add(lblPrecio);
 
         // Añadir componentes al panel principal
-        panel.add(panelInfo, BorderLayout.WEST);
+        panel.add(panelImagenZoom, BorderLayout.WEST);
+        panel.add(panelInfo, BorderLayout.CENTER);
         panel.add(panelPrecio, BorderLayout.EAST);
 
         // Efecto hover
-        panel.addMouseListener(new MouseAdapter() {
+        MouseAdapter hoverListener = new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 panel.setBackground(new Color(245, 245, 245));
                 panelInfo.setBackground(new Color(245, 245, 245));
                 panelPrecio.setBackground(new Color(245, 245, 245));
+                if (panelImagen != null) panelImagen.setBackground(new Color(245, 245, 245));
             }
 
             @Override
@@ -412,23 +535,101 @@ class PanelProductos extends JPanel {
                 panel.setBackground(Color.WHITE);
                 panelInfo.setBackground(Color.WHITE);
                 panelPrecio.setBackground(Color.WHITE);
+                if (panelImagen != null) panelImagen.setBackground(Color.WHITE);
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Aquí se podría abrir un diálogo con más detalles
-                // o agregar directamente al pedido
+                // Crear un panel personalizado para mostrar la imagen más grande junto con los detalles
+                JPanel customPanel = new JPanel(new BorderLayout(15, 10));
+                customPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+                // Panel para la imagen grande
+                JPanel imagenGrandePanel = new JPanel(new BorderLayout());
+                JLabel imagenGrande = new JLabel();
+
+                try {
+                    String rutaImagen = producto.getImagenUrl();
+                    if (rutaImagen != null && !rutaImagen.trim().isEmpty()) {
+                        File imgFile = obtenerArchivoImagen(rutaImagen);
+
+                        if (imgFile.exists()) {
+                            BufferedImage originalImage = ImageIO.read(imgFile);
+                            if (originalImage != null) {
+                                // Mostrar imagen más grande pero mantener proporciones razonables
+                                int maxWidth = 200;
+                                int maxHeight = 200;
+                                int width = originalImage.getWidth();
+                                int height = originalImage.getHeight();
+
+                                double scale = Math.min((double)maxWidth / width, (double)maxHeight / height);
+                                int scaledWidth = (int)(width * scale);
+                                int scaledHeight = (int)(height * scale);
+
+                                Image scaledImage = originalImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+                                imagenGrande.setIcon(new ImageIcon(scaledImage));
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                imagenGrandePanel.add(imagenGrande, BorderLayout.CENTER);
+
+                // Panel para los detalles
+                JPanel detallesPanel = new JPanel();
+                detallesPanel.setLayout(new BoxLayout(detallesPanel, BoxLayout.Y_AXIS));
+
+                JLabel nombreDetalle = new JLabel("Producto: " + producto.getNombre());
+                nombreDetalle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+                JLabel descDetalle = new JLabel("Descripción: " + producto.getDescripcion());
+                JLabel precioDetalle = new JLabel(String.format("Precio: $%.2f", producto.getPrecioBase()));
+                JLabel catDetalle = new JLabel("Categoría: " + producto.getCategoria().getNombre());
+
+                detallesPanel.add(nombreDetalle);
+                detallesPanel.add(Box.createVerticalStrut(5));
+                detallesPanel.add(descDetalle);
+                detallesPanel.add(Box.createVerticalStrut(5));
+                detallesPanel.add(precioDetalle);
+                detallesPanel.add(Box.createVerticalStrut(5));
+                detallesPanel.add(catDetalle);
+
+                customPanel.add(imagenGrandePanel, BorderLayout.WEST);
+                customPanel.add(detallesPanel, BorderLayout.CENTER);
+
                 JOptionPane.showMessageDialog(panel,
-                        "Producto: " + producto.getNombre() + "\n" +
-                                "Descripción: " + producto.getDescripcion() + "\n" +
-                                "Precio: $" + producto.getPrecioBase() + "\n" +
-                                "Categoría: " + producto.getCategoria().getNombre(),
+                        customPanel,
                         "Detalles del Producto",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.PLAIN_MESSAGE);
             }
-        });
+        };
+
+        panel.addMouseListener(hoverListener);
 
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         return panel;
     }
+
+    /**
+     * Obtiene un objeto File para la imagen, convirtiendo a ruta absoluta si es necesario.
+     * Siempre trata de usar rutas relativas al directorio del programa.
+     *
+     * @param rutaImagen La URL o ruta de la imagen
+     * @return El objeto File que representa la imagen
+     */
+    private File obtenerArchivoImagen(String rutaImagen) {
+        String subruta;
+
+        int index = rutaImagen.indexOf("imagenes");
+        if (index != -1) {
+            subruta = rutaImagen.substring(index); // Solo la parte desde "imagenes/..."
+        } else {
+            // Si no contiene "imagenes", asumir que es solo el nombre del archivo
+            subruta = "imagenes" + File.separator + new File(rutaImagen).getName();
+        }
+
+        return new File(subruta);
+    }
+
 }

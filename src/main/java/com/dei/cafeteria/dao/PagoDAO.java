@@ -13,6 +13,7 @@ public class PagoDAO extends AbstractDAO<Pago, Integer> {
     private static final String UPDATE = "UPDATE pago SET orden_id=?, fecha_hora=?, monto=?, metodo_pago_id=?, referencia=?, cambio=? WHERE id=?";
     private static final String DELETE = "DELETE FROM pago WHERE id=?";
     private static final String FIND_BY_ID = "SELECT * FROM pago WHERE id=?";
+    private static final String FIND_BY_ORDEN_ID = "SELECT * FROM pago WHERE orden_id=?";
     private static final String FIND_ALL = "SELECT * FROM pago";
 
     @Override
@@ -59,6 +60,14 @@ public class PagoDAO extends AbstractDAO<Pago, Integer> {
             return ejecutarQueryUnico(FIND_BY_ID, this::mapear, id);
         } catch (SQLException e) {
             throw new DAOException("Error al buscar pago por ID: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Pago> buscarPorOrdenID(Integer ordenId) throws DAOException {
+        try {
+            return ejecutarQuery(FIND_BY_ORDEN_ID, this::mapear, ordenId);
+        } catch (SQLException e) {
+            throw new DAOException("Error al buscar pagos por orden ID: " + e.getMessage(), e);
         }
     }
 

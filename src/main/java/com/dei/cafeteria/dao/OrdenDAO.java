@@ -15,6 +15,7 @@ public class OrdenDAO extends AbstractDAO<Orden, Integer> {
     private static final String UPDATE = "UPDATE orden SET estado_id=?, notas=? WHERE id=?";
     private static final String DELETE = "DELETE FROM orden WHERE id=?";
     private static final String FIND_BY_ID = "SELECT * FROM orden WHERE id=?";
+    private static final String FIND_BY_ESTADO = "SELECT * FROM orden WHERE estado_id=?";
     private static final String FIND_ALL = "SELECT * FROM orden";
 
     @Override
@@ -72,6 +73,15 @@ public class OrdenDAO extends AbstractDAO<Orden, Integer> {
             throw new DAOException("Error al buscar orden por ID: " + e.getMessage(), e);
         }
     }
+
+    public List<Orden> buscarPorEstado(Integer estadoId) throws DAOException {
+        try {
+            return ejecutarQuery(FIND_BY_ESTADO, this::mapear, estadoId);
+        } catch (SQLException e) {
+            throw new DAOException("Error al buscar órdenes por estado: " + e.getMessage(), e);
+        }
+    }
+
 
     @Override
     public List<Orden> listarTodos() throws DAOException {

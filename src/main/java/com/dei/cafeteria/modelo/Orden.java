@@ -20,4 +20,12 @@ public class Orden {
     private String notas;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    public int getEstadoId() {
+        return getEstado().getId();
+    }
+
+    public int getMesaId(){
+        return getMesa().getId();
+    }
 }

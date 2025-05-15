@@ -53,6 +53,10 @@ public class PanelMesas extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    public void recargarMesas() {
+        cargarMesasDesdeControlador();
+    }
+
     private void cargarMesasDesdeControlador() {
         try {
             listaMesas = controladorMesas.obtenerTodasLasMesas();
@@ -63,7 +67,6 @@ public class PanelMesas extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
             listaMesas = new ArrayList<>();
         }
-
         actualizarVistaMesas();
     }
 
