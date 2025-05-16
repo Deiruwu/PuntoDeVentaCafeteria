@@ -20,8 +20,8 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
     private final EstadoUsuarioDAO estadoUsuarioDAO;
 
     // Consultas SQL
-    private static final String INSERT = "INSERT INTO usuario (nombre_usuario, hash_contraseña, empleado_id, estado_id, ultimo_login) " +
-            "VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT = "INSERT INTO usuario (nombre_usuario, hash_contraseña, empleado_id, ultimo_login) " +
+            "VALUES (?, ?, ?, ?)";
     private static final String UPDATE = "UPDATE usuario SET nombre_usuario = ?, hash_contraseña = ?, " +
             "empleado_id = ?, estado_id = ?, ultimo_login = ? WHERE id = ?";
     private static final String DELETE = "DELETE FROM usuario WHERE id = ?";
@@ -50,7 +50,6 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
                     usuario.getNombreUsuario(),
                     usuario.getHashContraseña(),
                     usuario.getEmpleado().getId(),
-                    usuario.getEstado().getId(),
                     usuario.getUltimoLogin());
             usuario.setId(id);
             return usuario;

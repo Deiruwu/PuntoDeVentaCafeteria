@@ -11,26 +11,24 @@ import java.util.List;
 public class ItemOrdenDAO extends AbstractDAO<ItemOrden, Integer> {
 
     // Campos eliminados: precio_unitario, precio_con_iva, subtotal, iva, total
-    private static final String INSERT = "INSERT INTO item_orden (orden_id, producto_id, tamaño_id, cantidad, notas) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT = "INSERT INTO vista_item_orden (orden_id, producto_id, tamaño_id, cantidad, notas) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE = "UPDATE item_orden SET orden_id=?, producto_id=?, tamaño_id=?, cantidad=?, notas=? WHERE id=?";
     private static final String DELETE = "DELETE FROM item_orden WHERE id=?";
     private static final String FIND_BY_ID = "SELECT * FROM item_orden WHERE id=?";
+    private static final String FIND_BY_ORDEN_ID = "SELECT * FROM item_orden WHERE orden_id=?";
     private static final String FIND_ALL = "SELECT * FROM item_orden";
 
     @Override
     public ItemOrden guardar(ItemOrden item) throws DAOException {
         try {
-            // Solo enviamos los datos básicos, el resto lo calcula la BD
-            int id = ejecutarInsert(INSERT,
+            int id = ejecutarInsertVista(INSERT,
                     item.getOrden().getId(),
                     item.getProducto().getId(),
-                    item.getTamaño() != null ? item.getTamaño().getId() : null,
+                    item.getTamaño() != null ? item.getTamaño().getId() : 1,
                     item.getCantidad(),
                     item.getNotas()
             );
             item.setId(id);
-
-            // Obtenemos y actualizamos los valores calculados desde la BD
             return buscarPorId(id);
         } catch (SQLException e) {
             throw new DAOException("Error al guardar item: " + e.getMessage(), e);
@@ -79,6 +77,14 @@ public class ItemOrdenDAO extends AbstractDAO<ItemOrden, Integer> {
         }
     }
 
+    public List<ItemOrden> buscarPorOrdenID(Integer estadoId) throws DAOException {
+        try {
+            return ejecutarQuery(FIND_BY_ORDEN_ID, this::mapear, estadoId);
+        } catch (SQLException e) {
+            throw new DAOException("Error al buscar órdenes por estado: " + e.getMessage(), e);
+        }
+    }
+
     @Override
     public List<ItemOrden> listarTodos() throws DAOException {
         try {
@@ -89,30 +95,36 @@ public class ItemOrdenDAO extends AbstractDAO<ItemOrden, Integer> {
     }
 
     private ItemOrden mapear(ResultSet rs) throws SQLException {
-        // El mapeo sigue igual porque la BD nos devuelve los valores calculados
-        Orden orden = new Orden();
-        orden.setId(rs.getInt("orden_id"));
+        ProductoDAO productoDAO = new ProductoDAO();
+        TamañoProductoDAO tamañoDAO = new TamañoProductoDAO();
+        OrdenDAO ordenDAO = new OrdenDAO();
 
-        Producto producto = new Producto();
-        producto.setId(rs.getInt("producto_id"));
+        Producto producto = null;
+        TamañoProducto tamaño = null;
+        Orden orden = null;
 
-        TamañoProducto tamaño = new TamañoProducto();
-        tamaño.setId(rs.getInt("tamaño_id"));
-
+        try {
+            producto = productoDAO.buscarPorId(rs.getInt("producto_id"));
+            tamaño = tamañoDAO.buscarPorId(rs.getInt("tamaño_id"));
+            orden = ordenDAO.buscarPorId(rs.getInt("orden_id"));
+        } catch (DAOException e) {
+            throw new RuntimeException(e);
+        }
         return ItemOrden.builder()
                 .id(rs.getInt("id"))
                 .orden(orden)
                 .producto(producto)
                 .tamaño(tamaño)
                 .cantidad(rs.getDouble("cantidad"))
-                .precioUnitario(rs.getDouble("precio_unitario"))  // Lo obtiene de la BD
-                .precioConIva(rs.getDouble("precio_con_iva"))      // Lo obtiene de la BD
-                .subtotal(rs.getDouble("subtotal"))                // Lo obtiene de la BD
-                .iva(rs.getDouble("iva"))                          // Lo obtiene de la BD
-                .total(rs.getDouble("total"))                      // Lo obtiene de la BD
+                .precioUnitario(rs.getDouble("precio_unitario"))
+                .precioConIva(rs.getDouble("precio_con_iva"))
+                .subtotal(rs.getDouble("subtotal"))
+                .iva(rs.getDouble("iva"))
+                .total(rs.getDouble("total"))
                 .notas(rs.getString("notas"))
                 .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
                 .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
                 .build();
     }
+
 }

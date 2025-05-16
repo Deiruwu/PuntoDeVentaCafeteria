@@ -15,9 +15,9 @@ import java.util.List;
 public class EmpleadoDAO extends AbstractDAO<Empleado, Integer> {
     private final RolDAO rolDAO;
     // Consultas SQL
-    private static final String INSERT = "INSERT INTO empleado (nombre, apellido, rol_id, url_imagen) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE = "UPDATE empleado SET nombre = ?, apellido = ?, rol_id = ?, url_imagen = ?, " +
+    private static final String INSERT = "INSERT INTO empleado (nombre, apellido, rol_id, imagen_url) " +
+            "VALUES (?, ?, ?, ?)";
+    private static final String UPDATE = "UPDATE empleado SET nombre = ?, apellido = ?, rol_id = ?, imagen_url = ?, " +
             "WHERE id = ?";
     private static final String DELETE = "DELETE FROM empleado WHERE id = ?";
     private static final String FIND_BY_ID = "SELECT * FROM empleado WHERE id = ?";
@@ -33,7 +33,8 @@ public class EmpleadoDAO extends AbstractDAO<Empleado, Integer> {
             int id = ejecutarInsert(INSERT,
                     empleado.getNombre(),
                     empleado.getApellido(),
-                    empleado.getRol());
+                    empleado.getRol().getId(),
+                    empleado.getImagenUrl());
             empleado.setId(id);
             return empleado;
         } catch (SQLException e) {
@@ -47,7 +48,7 @@ public class EmpleadoDAO extends AbstractDAO<Empleado, Integer> {
             int filasAfectadas = ejecutarUpdate(UPDATE,
                     empleado.getNombre(),
                     empleado.getApellido(),
-                    empleado.getRol(),
+                    empleado.getRol().getId(),
                     empleado.getId());
             if (filasAfectadas == 0) {
                 throw new DAOException("No se encontró el empleado con ID " + empleado.getId());
@@ -109,6 +110,7 @@ public class EmpleadoDAO extends AbstractDAO<Empleado, Integer> {
                 .nombre(rs.getString("nombre"))
                 .apellido(rs.getString("apellido"))
                 .rol(rol)
+                .imagenUrl(rs.getString("imagen_url"))
                 .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
                 .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
                 .build();

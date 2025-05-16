@@ -15,4 +15,9 @@ public class TamañoProducto {
     private Boolean esPorcion;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

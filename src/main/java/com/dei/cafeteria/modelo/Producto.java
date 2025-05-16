@@ -21,4 +21,9 @@ public class Producto {
     private String imagenUrl;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

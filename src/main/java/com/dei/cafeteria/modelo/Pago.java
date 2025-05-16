@@ -19,4 +19,16 @@ public class Pago {
     private Double cambio;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    public Integer getOrdenId() {
+        return getOrden().getId();
+    }
+
+    public Integer getMetodoPagoId() {
+        return getMetodoPago().getId();
+    }
+
+    public double getTotal() {
+        return getOrden().getTotal();
+    }
 }

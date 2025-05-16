@@ -11,7 +11,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Panel para tomar órdenes/pedidos
@@ -29,19 +31,22 @@ class PanelTomarOrden extends JPanel {
     private JTable tablaProductosOrden;
     private DefaultTableModel modeloTablaProductos;
     private JLabel lblSubtotal;
-    private JLabel lblStockDisponible; // Nuevo: Etiqueta para mostrar stock
+    private JLabel lblStockDisponible;
 
     // Datos simulados
     private List<Mesa> listaMesas;
     private List<Producto> listaProductos;
-    private List<ItemOrden> elementosPedido;
+    private Map<String, ItemOrden> elementosPedido; // Clave: "idProducto-idTamaño"
+    private List<String> clavesPedido; // Para mapear filas a claves
     private int mesaSeleccionada;
 
     public PanelTomarOrden(Empleado meseroActual) {
         this.meseroActual = meseroActual;
         setLayout(new BorderLayout());
         setBackground(VistaMesero.COLOR_CREMA);
-        elementosPedido = new ArrayList<>();
+        elementosPedido = new HashMap<>();
+        clavesPedido = new ArrayList<>();
+
 
         inicializarComponentes();
         cargarDatos();
@@ -169,16 +174,15 @@ class PanelTomarOrden extends JPanel {
         panelPedido.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         modeloTablaProductos = new DefaultTableModel(
-                new Object[]{"Producto", "Precio", "Cantidad", "Subtotal", ""}, 0) {
-            @Override
+                new Object[]{"Producto", "Tamaño", "Precio", "Cantidad", "Subtotal", ""}, 0) {            @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 4; // Solo la columna del botón eliminar es editable
+                return column == 5; // Solo la columna del botón eliminar es editable
             }
 
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 4) {
-                    return Button.class; // La columna 4 es de tipo botón
+                if (columnIndex == 5) {
+                    return Button.class; // La columna 5 es de tipo botón
                 }
                 return Object.class;
             }
@@ -190,8 +194,8 @@ class PanelTomarOrden extends JPanel {
         tablaProductosOrden.setRowHeight(30);
         tablaProductosOrden.setShowGrid(false);
 
-        tablaProductosOrden.getColumnModel().getColumn(4).setCellRenderer(new BotonEliminarRenderer());
-        tablaProductosOrden.getColumnModel().getColumn(4).setCellEditor(new BotonEliminarEditor(tablaProductosOrden));
+        tablaProductosOrden.getColumnModel().getColumn(5).setCellRenderer(new BotonEliminarRenderer());
+        tablaProductosOrden.getColumnModel().getColumn(5).setCellEditor(new BotonEliminarEditor(tablaProductosOrden));
 
         JScrollPane scrollPedido = new JScrollPane(tablaProductosOrden);
         scrollPedido.setBorder(null);
@@ -290,36 +294,77 @@ class PanelTomarOrden extends JPanel {
 
         int cantidad = (Integer) spnCantidad.getValue();
 
-        // Validar que hay suficiente stock
+        // Validar stock
         if (cantidad > productoSeleccionado.getStockActual()) {
             JOptionPane.showMessageDialog(this,
-                    "No hay suficiente stock disponible. Stock actual: " + productoSeleccionado.getStockActual(),
-                    "Stock insuficiente",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Stock insuficiente. Disponible: " + productoSeleccionado.getStockActual(),
+                    "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        boolean encontrado = false;
-        for (ItemOrden item : elementosPedido) {
-            if (item.getProducto().getId() == productoSeleccionado.getId()) {
-                // Verificar si hay suficiente stock para la nueva cantidad total
-                double nuevaCantidad = item.getCantidad() + cantidad;
-                if (nuevaCantidad > productoSeleccionado.getStockActual()) {
-                    JOptionPane.showMessageDialog(this,
-                            "No hay suficiente stock disponible. Stock actual: " + productoSeleccionado.getStockActual(),
-                            "Stock insuficiente",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
+        // Crear diálogo para selección de tamaño y notas
+        JPanel panelDialogo = new JPanel(new GridLayout(0, 1));
 
-                item.setCantidad(nuevaCantidad);
-                encontrado = true;
-                break;
+        // Configurar opciones de tamaño según categoría
+        CategoriaProducto categoria = productoSeleccionado.getCategoria();
+        List<TamañoProducto> tamanosDisponibles = new ArrayList<>();
+        TamañoProductoDAO tamanoDAO = new TamañoProductoDAO();
+
+        try {
+            if (categoria.getId() == 1 || categoria.getId() == 2) { // Bebidas
+                tamanosDisponibles.add(tamanoDAO.buscarPorId(1));
+                tamanosDisponibles.add(tamanoDAO.buscarPorId(2));
+                tamanosDisponibles.add(tamanoDAO.buscarPorId(3));
+            } else if (categoria.getId() == 3) { // Postres
+                tamanosDisponibles.add(tamanoDAO.buscarPorId(4));
+                tamanosDisponibles.add(tamanoDAO.buscarPorId(5));
+            } else {
+                tamanosDisponibles.add(tamanoDAO.buscarPorId(1));
             }
+        } catch (DAOException e) {
+            throw new RuntimeException(e);
         }
 
-        if (!encontrado) {
-            elementosPedido.add(new ItemOrden(productoSeleccionado, cantidad, 1));
+        JComboBox<TamañoProducto> cmbTamanos = new JComboBox<>(new DefaultComboBoxModel<>(tamanosDisponibles.toArray(new TamañoProducto[0])));
+        JTextField txtNotas = new JTextField(20);
+
+        if (tamanosDisponibles.size() > 1) {
+            panelDialogo.add(new JLabel("Tamaño:"));
+            panelDialogo.add(cmbTamanos);
+        }
+
+        panelDialogo.add(new JLabel("Notas:"));
+        panelDialogo.add(txtNotas);
+
+        int resultado = JOptionPane.showConfirmDialog(this, panelDialogo,
+                "Seleccione opciones", JOptionPane.OK_CANCEL_OPTION);
+
+        if (resultado != JOptionPane.OK_OPTION) return;
+
+        TamañoProducto tamanoSeleccionado = (TamañoProducto) cmbTamanos.getSelectedItem();
+        String notas = txtNotas.getText();
+
+        // Crear clave única para el mapa
+        String clave = productoSeleccionado.getId() + "-" + tamanoSeleccionado;
+
+        // Verificar si ya existe el mismo producto con el mismo tamaño
+        ItemOrden itemExistente = elementosPedido.get(clave);
+
+        if (elementosPedido.containsKey(clave)) {
+            // Actualizar cantidad si ya existe
+            ItemOrden existente = elementosPedido.get(clave);
+            existente.setCantidad(existente.getCantidad() + cantidad);
+            itemExistente.setNotas(notas);
+        } else {
+            // Crear nuevo ítem
+            ItemOrden nuevoItem = ItemOrden.builder()
+                    .producto(productoSeleccionado)
+                    .cantidad( (double) cantidad)
+                    .tamaño(tamanoSeleccionado)
+                    .notas(notas)
+                    .build();
+
+            elementosPedido.put(clave, nuevoItem);
         }
 
         actualizarTablaPedido();
@@ -327,21 +372,25 @@ class PanelTomarOrden extends JPanel {
 
     private void actualizarTablaPedido() {
         modeloTablaProductos.setRowCount(0);
+        clavesPedido.clear();
         double subtotal = 0;
 
-        for (ItemOrden item : elementosPedido) {
-            double precioUnitario = item.getProducto().getPrecioBase();
-            double totalLinea = precioUnitario * item.getCantidad();
+
+        for (Map.Entry<String, ItemOrden> entry : elementosPedido.entrySet()) {
+            ItemOrden item = entry.getValue();
+            double precio = item.getProducto().getPrecioBase() * item.getTamaño().getFactorPrecio();
+            double subtotalLinea = precio * item.getCantidad();
 
             modeloTablaProductos.addRow(new Object[]{
-                    item.getProducto().getNombre(),
-                    "$" + String.format("%.2f", precioUnitario),
+                    item.getProducto(),
+                    item.getTamaño().getNombre(),
+                    String.format("$%.2f", precio),
                     item.getCantidad(),
-                    "$" + String.format("%.2f", totalLinea), // Total línea = precio unitario * cantidad
+                    String.format("$%.2f", subtotalLinea),
                     "Eliminar"
             });
-
-            subtotal += totalLinea;
+            clavesPedido.add(entry.getKey()); // Guardar clave para referencia
+            subtotal += subtotalLinea;
         }
 
         lblSubtotal.setText(String.format("Subtotal: $%.2f", subtotal));
@@ -367,7 +416,7 @@ class PanelTomarOrden extends JPanel {
         }
 
         // Validación 3: Cantidades válidas en todos los items
-        for (ItemOrden item : elementosPedido) {
+        for (ItemOrden item : elementosPedido.values()) {
             if (item.getCantidad() <= 0) {
                 JOptionPane.showMessageDialog(this,
                         "La cantidad debe ser mayor a cero en todos los productos",
@@ -388,39 +437,42 @@ class PanelTomarOrden extends JPanel {
         }
 
         try {
-            // Obtener mesa y mesero (deberías inyectar el mesero actual)
             EstadoMesaDAO estadoMesaDAO = new EstadoMesaDAO();
             MesaDAO mesaDAO = new MesaDAO(estadoMesaDAO);
-            Mesa mesa = mesaDAO.buscarPorId(mesaSeleccionada);
 
-            // Obtener el mesero actual (esto debería venir de la sesión)
-            Empleado mesero = obtenerMeseroActual(); // Implementar este metodo
+            Mesa mesa = mesaDAO.buscarPorId(mesaSeleccionada);
+            Empleado mesero = obtenerMeseroActual();
 
             // Crear la orden
             Orden orden = Orden.builder()
                     .mesa(mesa)
                     .mesero(mesero)
-                    .notas("") // Puedes agregar un campo para notas
+                    .notas("")
                     .build();
 
-            // Guardar la orden en la BD
             OrdenDAO ordenDAO = new OrdenDAO();
             orden = ordenDAO.guardar(orden);
 
-            // Guardar los items de la orden y actualizar stock
+            // Guardar los items de la orden
             ItemOrdenDAO itemOrdenDAO = new ItemOrdenDAO();
-            ProductoDAO productoDAO = new ProductoDAO();
+            TamañoProductoDAO tamañoProductoDAO = new TamañoProductoDAO();
+            // IMPORTANTE: Crear NUEVOS objetos ItemOrden para evitar duplicaciones
+            for (ItemOrden itemOriginal : elementosPedido.values()) {
+                // Los valores como precio unitario serán generados por los triggers de la BD
+                int tamañoProducto = itemOriginal.getTamaño().getId();
 
-            for (ItemOrden item : elementosPedido) {
-                item.setOrden(orden);
-                itemOrdenDAO.guardar(item);
+                ItemOrden nuevoItem = ItemOrden.builder()
+                        .orden(itemOriginal.getOrden())
+                        .producto(itemOriginal.getProducto())
+                        .tamaño(tamañoProductoDAO.buscarPorId(tamañoProducto))
+                        .cantidad(itemOriginal.getCantidad())
+                        .notas(itemOriginal.getNotas()).build();
+                // Establecer la orden
+                nuevoItem.setOrden(orden);
 
-                // Actualizar stock del producto
-                Producto producto = item.getProducto();
-                producto.setStockActual(producto.getStockActual() - item.getCantidad());
-                productoDAO.actualizar(producto);
+                // Guardar el nuevo item (permitiendo que los triggers de la BD hagan su trabajo)
+                itemOrdenDAO.guardar(nuevoItem);
             }
-
             return true;
 
         } catch (DAOException ex) {
@@ -450,9 +502,10 @@ class PanelTomarOrden extends JPanel {
         }
     }
 
-    private void eliminarProductoDePedido(int indice) {
-        if (indice >= 0 && indice < elementosPedido.size()) {
-            elementosPedido.remove(indice);
+    private void eliminarProductoDePedido(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < clavesPedido.size()) {
+            String clave = clavesPedido.get(rowIndex);
+            elementosPedido.remove(clave);
             actualizarTablaPedido();
         }
     }

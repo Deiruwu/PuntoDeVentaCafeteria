@@ -4,6 +4,7 @@ package com.dei.cafeteria.vista;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.dao.EmpleadoDAO;
@@ -30,16 +31,24 @@ public class VistaMesero extends JFrame {
     private JPanel panelContenido;
     private JPanel panelMenu;
 
+    // Panel para la información del empleado
+    private JPanel panelInfoEmpleado;
+    private JLabel lblFotoEmpleado;
+    private JLabel lblNombreEmpleado;
+    private JLabel lblIdEmpleado;
+
     // Componentes del menú
     private JButton btnMesas;
     private JButton btnProductos;
     private JButton btnTomarOrden;
     private JButton btnEnviarPedido;
-
+    private JButton btnGestionOrdenes;
     // Paneles de contenido
     private PanelMesas panelMesas;
     private PanelProductos panelProductos;
     private PanelTomarOrden panelTomarOrden;
+    private PanelGestionOrdenes panelGestionOrdenes;
+
 
     // Panel actual mostrado
     private JPanel panelActual;
@@ -72,19 +81,27 @@ public class VistaMesero extends JFrame {
         panelMenu.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         panelMenu.setPreferredSize(new Dimension(200, getHeight()));
 
+        // Agregar panel para la información del empleado
+        crearPanelInfoEmpleado();
+
         // Crear botones del menú con estilo personalizado
         btnMesas = crearBotonMenu("Mesas");
         btnProductos = crearBotonMenu("Productos");
+        btnGestionOrdenes = crearBotonMenu("Ordenes");
         btnTomarOrden = crearBotonMenu("Tomar Orden");
         btnEnviarPedido = crearBotonMenu("Enviar Pedido");
 
         // Añadir botones al menú
         panelMenu.add(Box.createVerticalStrut(20));
         panelMenu.add(crearLabelMenu("MESERO"));
+        panelMenu.add(Box.createVerticalStrut(20));
+        panelMenu.add(panelInfoEmpleado);
         panelMenu.add(Box.createVerticalStrut(40));
         panelMenu.add(btnMesas);
         panelMenu.add(Box.createVerticalStrut(15));
         panelMenu.add(btnProductos);
+        panelMenu.add(Box.createVerticalStrut(15));
+        panelMenu.add(btnGestionOrdenes);
         panelMenu.add(Box.createVerticalStrut(15));
         panelMenu.add(btnTomarOrden);
         panelMenu.add(Box.createVerticalStrut(15));
@@ -99,15 +116,94 @@ public class VistaMesero extends JFrame {
         panelMesas = new PanelMesas();
         panelProductos = new PanelProductos();
         panelTomarOrden = new PanelTomarOrden(meseroActual);
+        panelGestionOrdenes = new PanelGestionOrdenes(meseroActual);
 
         // Añadir paneles al contenedor principal
         panelContenido.add(panelMesas, "mesas");
         panelContenido.add(panelProductos, "productos");
+        panelContenido.add(panelGestionOrdenes, "gestionOrdenes");
         panelContenido.add(panelTomarOrden, "tomarOrden");
 
         // Añadir componentes al panel principal
         panelPrincipal.add(panelMenu, BorderLayout.WEST);
         panelPrincipal.add(panelContenido, BorderLayout.CENTER);
+    }
+
+    private void crearPanelInfoEmpleado() {
+        panelInfoEmpleado = new JPanel();
+        panelInfoEmpleado.setLayout(new BoxLayout(panelInfoEmpleado, BoxLayout.Y_AXIS));
+        panelInfoEmpleado.setBackground(COLOR_AZUL);
+        panelInfoEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelInfoEmpleado.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelInfoEmpleado.setMaximumSize(new Dimension(180, 200));
+
+        // Cargar la foto del empleado
+        String rutaImagen = meseroActual.getImagenUrl();
+        ImageIcon imagenEmpleado = null;
+
+        if (rutaImagen != null && !rutaImagen.isEmpty()) {
+            if (rutaImagen.contains("/imagenes/")) {
+                int indice = rutaImagen.indexOf("/imagenes/");
+                rutaImagen = rutaImagen.substring(indice + 1);
+            }
+
+            // Intentar cargar la imagen
+            try {
+                File archivo = new File(rutaImagen);
+                if (archivo.exists()) {
+                    imagenEmpleado = new ImageIcon(rutaImagen);
+                } else {
+                    // Si no existe, usar una imagen por defecto
+                    imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
+                }
+            } catch (Exception e) {
+                System.err.println("Error al cargar la imagen del empleado: " + e.getMessage());
+                imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
+            }
+        } else {
+            // Si no hay URL, usar imagen por defecto
+            imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
+        }
+
+        // Redimensionar imagen si es necesario
+        if (imagenEmpleado != null) {
+            Image img = imagenEmpleado.getImage();
+            Image imgRedimensionada = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            imagenEmpleado = new ImageIcon(imgRedimensionada);
+        }
+
+        // Crear componentes de información del empleado
+        lblFotoEmpleado = new JLabel();
+        lblFotoEmpleado.setIcon(imagenEmpleado);
+        lblFotoEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Crear círculo para la foto
+        lblFotoEmpleado.setBorder(BorderFactory.createLineBorder(COLOR_CREMA, 2));
+
+        // Obtener nombre del empleado
+        String nombreEmpleado = meseroActual.getNombre();
+        if (nombreEmpleado == null || nombreEmpleado.isEmpty()) {
+            nombreEmpleado = "Empleado";
+        }
+
+        lblNombreEmpleado = new JLabel(nombreEmpleado);
+        lblNombreEmpleado.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblNombreEmpleado.setForeground(COLOR_CREMA);
+        lblNombreEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Obtener ID del empleado
+        int idEmpleado = meseroActual.getId();
+        lblIdEmpleado = new JLabel("ID: " + idEmpleado);
+        lblIdEmpleado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblIdEmpleado.setForeground(COLOR_CREMA);
+        lblIdEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Agregar componentes al panel
+        panelInfoEmpleado.add(lblFotoEmpleado);
+        panelInfoEmpleado.add(Box.createVerticalStrut(10));
+        panelInfoEmpleado.add(lblNombreEmpleado);
+        panelInfoEmpleado.add(Box.createVerticalStrut(5));
+        panelInfoEmpleado.add(lblIdEmpleado);
     }
 
     private JButton crearBotonMenu(String texto) {
@@ -149,6 +245,7 @@ public class VistaMesero extends JFrame {
         btnMesas.addActionListener(e -> mostrarPanel("mesas"));
         btnProductos.addActionListener(e -> mostrarPanel("productos"));
         btnTomarOrden.addActionListener(e -> mostrarPanel("tomarOrden"));
+        btnGestionOrdenes.addActionListener(e -> mostrarPanel("gestionOrdenes"));
         btnEnviarPedido.addActionListener(e -> enviarPedido());
     }
 
@@ -165,6 +262,7 @@ public class VistaMesero extends JFrame {
                     JOptionPane.INFORMATION_MESSAGE);
             panelTomarOrden.limpiarPedido();
             panelMesas.recargarMesas();
+            panelGestionOrdenes.actualizarOrdenes();
         } else {
             JOptionPane.showMessageDialog(this,
                     "No hay un pedido válido para enviar",
@@ -203,7 +301,4 @@ public class VistaMesero extends JFrame {
             vista.setVisible(true);
         });
     }
-
 }
-
-

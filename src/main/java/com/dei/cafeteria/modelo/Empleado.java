@@ -13,10 +13,13 @@ public class Empleado {
     private String nombre;
     private String apellido;
     private Rol rol;
-    private String imagenUrl;
+    @Builder.Default
+    private String imagenUrl = "/imagenes/empleados/default.png";
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 
-    public Empleado(int i, String mesero, String ejemplo, Rol rol) {
+    @Override
+    public String toString() {
+        return nombre + " " + apellido;
     }
 }

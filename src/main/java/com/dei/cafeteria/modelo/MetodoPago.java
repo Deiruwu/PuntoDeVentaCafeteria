@@ -15,4 +15,9 @@ public class MetodoPago {
     private Boolean requiereReferencia;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

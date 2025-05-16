@@ -1,11 +1,6 @@
 package com.dei.cafeteria.dao;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,6 +95,36 @@ public abstract class AbstractDAO<T, K> implements DAO<T, K> {
         }
     }
 
+    protected int ejecutarInsertVista(String sql, Object... parametros) throws SQLException {
+        Connection conexion = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            conexion = obtenerConexion();
+            statement = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            // Asignar parámetros
+            for (int i = 0; i < parametros.length; i++) {
+                statement.setObject(i + 1, parametros[i]);
+            }
+
+            int filasAfectadas = statement.executeUpdate();
+            if (filasAfectadas == 0) {
+                //throw new SQLException("La inserción falló, no se modificaron filas.");
+            }
+
+            resultSet = statement.getGeneratedKeys();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                throw new SQLException("La inserción falló, no se obtuvo el ID generado.");
+            }
+        } finally {
+            cerrarRecursos(conexion, statement, resultSet);
+        }
+    }
+
     /**
      * Ejecuta una operación de actualización o eliminación.
      * @param sql Consulta SQL de actualización o eliminación
@@ -160,6 +185,36 @@ public abstract class AbstractDAO<T, K> implements DAO<T, K> {
             cerrarRecursos(conexion, statement, resultSet);
         }
     }
+
+    protected <E> List<E> ejecutarQueryFechas(String sql, ResultSetMapper<E> mapper, Timestamp inicio, Timestamp fin) throws SQLException {
+        Connection conexion = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        List<E> resultados = new ArrayList<>();
+
+        try {
+            conexion = obtenerConexion();
+            statement = conexion.prepareStatement(sql);
+
+            // Convertimos los timestamps a string sin milisegundos
+            String inicioStr = inicio.toLocalDateTime().withNano(0).toString().replace('T', ' ');
+            String finStr = fin.toLocalDateTime().withNano(0).toString().replace('T', ' ');
+
+            statement.setString(1, inicioStr);
+            statement.setString(2, finStr);
+
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                resultados.add(mapper.mapRow(resultSet));
+            }
+
+            return resultados;
+        } finally {
+            cerrarRecursos(conexion, statement, resultSet);
+        }
+    }
+
+
 
     /**
      * Ejecuta una consulta SELECT que devuelve un único resultado.

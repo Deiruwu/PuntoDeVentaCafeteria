@@ -73,7 +73,7 @@ public class PanelOrdenesPendientes extends JPanel {
         panelSuperior.add(panelFiltro, BorderLayout.EAST);
 
         // Configurar tabla de órdenes
-        String[] columnas = {"ID", "Mesa", "Mesero", "Estado", "Total", "Fecha Creación", "Fecha Actualización"};
+        String[] columnas = {"Orden", "Mesa", "Mesero", "Estado", "Total", "Fecha Creación", "Fecha Actualización"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -184,7 +184,7 @@ public class PanelOrdenesPendientes extends JPanel {
                 Object[] fila = {
                         orden.getId(),
                         orden.getMesaId(),
-                        orden.getMesero().getId(),
+                        orden.getMesero(),
                         obtenerNombreEstado(orden.getEstadoId()),
                         String.format("$%.2f", orden.getTotal()),
                         orden.getFechaCreacion().format(formatter),

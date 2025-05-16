@@ -3,6 +3,7 @@ package com.dei.cafeteria.vista;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.dao.EmpleadoDAO;
@@ -28,6 +29,12 @@ public class VistaCajero extends JFrame {
     private JPanel panelContenido;
     private JPanel panelMenu;
 
+    // Panel para la información del empleado
+    private JPanel panelInfoEmpleado;
+    private JLabel lblFotoEmpleado;
+    private JLabel lblNombreEmpleado;
+    private JLabel lblIdEmpleado;
+
     // Componentes del menú
     private JButton btnOrdenes;
     private JButton btnPagos;
@@ -37,7 +44,7 @@ public class VistaCajero extends JFrame {
     // Paneles de contenido
     private PanelOrdenesPendientes panelOrdenesPendientes;
     private PanelProcesarPago panelProcesarPago;
-    //private PanelHistorialPagos panelHistorialPagos;
+    private PanelHistorialPagos panelHistorialPagos;
     //private PanelReportes panelReportes;
 
     // Panel actual mostrado
@@ -71,6 +78,9 @@ public class VistaCajero extends JFrame {
         panelMenu.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         panelMenu.setPreferredSize(new Dimension(200, getHeight()));
 
+        // Agregar panel para la información del empleado
+        crearPanelInfoEmpleado();
+
         // Crear botones del menú con estilo personalizado
         btnOrdenes = crearBotonMenu("Órdenes Pendientes");
         btnPagos = crearBotonMenu("Procesar Pago");
@@ -80,6 +90,8 @@ public class VistaCajero extends JFrame {
         // Añadir botones al menú
         panelMenu.add(Box.createVerticalStrut(20));
         panelMenu.add(crearLabelMenu("CAJERO"));
+        panelMenu.add(Box.createVerticalStrut(20));
+        panelMenu.add(panelInfoEmpleado);
         panelMenu.add(Box.createVerticalStrut(40));
         panelMenu.add(btnOrdenes);
         panelMenu.add(Box.createVerticalStrut(15));
@@ -97,18 +109,95 @@ public class VistaCajero extends JFrame {
         // Inicializar los paneles específicos
         panelOrdenesPendientes = new PanelOrdenesPendientes();
         panelProcesarPago = new PanelProcesarPago(cajeroActual);
-        //panelHistorialPagos = new PanelHistorialPagos();
+        panelHistorialPagos = new PanelHistorialPagos(cajeroActual);
         //panelReportes = new PanelReportes();
 
         // Añadir paneles al contenedor principal
         panelContenido.add(panelOrdenesPendientes, "ordenes");
         panelContenido.add(panelProcesarPago, "pagos");
-        //panelContenido.add(panelHistorialPagos, "historial");
+        panelContenido.add(panelHistorialPagos, "historial");
         //panelContenido.add(panelReportes, "reportes");
 
         // Añadir componentes al panel principal
         panelPrincipal.add(panelMenu, BorderLayout.WEST);
         panelPrincipal.add(panelContenido, BorderLayout.CENTER);
+    }
+
+    private void crearPanelInfoEmpleado() {
+        panelInfoEmpleado = new JPanel();
+        panelInfoEmpleado.setLayout(new BoxLayout(panelInfoEmpleado, BoxLayout.Y_AXIS));
+        panelInfoEmpleado.setBackground(COLOR_AZUL);
+        panelInfoEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelInfoEmpleado.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelInfoEmpleado.setMaximumSize(new Dimension(180, 200));
+
+        // Cargar la foto del empleado
+        String rutaImagen = cajeroActual.getImagenUrl();
+        ImageIcon imagenEmpleado = null;
+
+        if (rutaImagen != null && !rutaImagen.isEmpty()) {
+            // Verificar si la ruta contiene "/ruta/imagenes" y transformarla a ruta absoluta
+            if (rutaImagen.contains("/imagenes/")) {
+                int indice = rutaImagen.indexOf("/imagenes/");
+                rutaImagen = rutaImagen.substring(indice + 1); // +1 para quitar el primer "/"
+            }
+
+            // Intentar cargar la imagen
+            try {
+                File archivo = new File(rutaImagen);
+                if (archivo.exists()) {
+                    imagenEmpleado = new ImageIcon(rutaImagen);
+                } else {
+                    // Si no existe, usar una imagen por defecto
+                    imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
+                }
+            } catch (Exception e) {
+                System.err.println("Error al cargar la imagen del empleado: " + e.getMessage());
+                imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
+            }
+        } else {
+            imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
+        }
+
+        // Redimensionar imagen si es necesario
+        if (imagenEmpleado != null) {
+            Image img = imagenEmpleado.getImage();
+            Image imgRedimensionada = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            imagenEmpleado = new ImageIcon(imgRedimensionada);
+        }
+
+        // Crear componentes de información del empleado
+        lblFotoEmpleado = new JLabel();
+        lblFotoEmpleado.setIcon(imagenEmpleado);
+        lblFotoEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Crear círculo para la foto
+        lblFotoEmpleado.setBorder(BorderFactory.createLineBorder(COLOR_CREMA, 2));
+
+        // Obtener nombre del empleado
+        String nombreEmpleado = cajeroActual.getNombre();
+        if (nombreEmpleado == null || nombreEmpleado.isEmpty()) {
+            nombreEmpleado = "Empleado";
+        }
+
+        lblNombreEmpleado = new JLabel(nombreEmpleado);
+        lblNombreEmpleado.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblNombreEmpleado.setForeground(COLOR_CREMA);
+        lblNombreEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Obtener ID del empleado
+        int idEmpleado = cajeroActual.getId();
+        lblIdEmpleado = new JLabel("ID: " + idEmpleado);
+        lblIdEmpleado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblIdEmpleado.setForeground(COLOR_CREMA);
+        lblIdEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Agregar componentes al panel
+        panelInfoEmpleado.add(lblFotoEmpleado);
+        panelInfoEmpleado.add(Box.createVerticalStrut(10));
+        panelInfoEmpleado.add(lblNombreEmpleado);
+        panelInfoEmpleado.add(Box.createVerticalStrut(5));
+        panelInfoEmpleado.add(lblIdEmpleado);
     }
 
     private JButton crearBotonMenu(String texto) {
@@ -156,7 +245,7 @@ public class VistaCajero extends JFrame {
     private void mostrarPanel(String nombrePanel) {
         CardLayout cl = (CardLayout) panelContenido.getLayout();
         cl.show(panelContenido, nombrePanel);
-        
+
         // Recargar datos según el panel mostrado
         if (nombrePanel.equals("ordenes")) {
             panelOrdenesPendientes.cargarOrdenesPendientes();
@@ -167,7 +256,7 @@ public class VistaCajero extends JFrame {
         }
     }
 
-    // Método principal para probar la interfaz
+    // Metodo principal para probar la interfaz
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -184,7 +273,7 @@ public class VistaCajero extends JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
+
             RolDAO rolDAO = new RolDAO();
             EmpleadoDAO empleadoDAO = new EmpleadoDAO(rolDAO);
             Empleado empleado = null;

@@ -209,6 +209,19 @@ CREATE TABLE IF NOT EXISTS item_orden (
                                           FOREIGN KEY (tamaño_id) REFERENCES tamaño_producto(id) ON DELETE RESTRICT
 );
 
+CREATE VIEW vista_item_orden AS
+SELECT
+    id,
+    orden_id,
+    producto_id,
+    tamaño_id,
+    cantidad,
+    notas
+FROM item_orden;
+
+
+DROP TRIGGER IF EXISTS calculate_item_valores_insert;
+
 -- Índices para consultas comunes en ítems
 CREATE INDEX idx_item_orden ON item_orden(orden_id);
 CREATE INDEX idx_item_producto ON item_orden(producto_id);
@@ -383,10 +396,11 @@ BEGIN
 END;
 
 -- Trigger para calcular precio con IVA, subtotal y total en item_orden al insertar
+-- Solución minimalista: reescribir con formato simple SQLite sin características especiales
 CREATE TRIGGER IF NOT EXISTS calculate_item_valores_insert
-    BEFORE INSERT ON item_orden
+    INSTEAD OF INSERT ON vista_item_orden
 BEGIN
-    -- Obtener si el producto aplica IVA y calculamos los valores necesarios
+    -- Obtener los valores necesarios de las tablas relacionadas
     INSERT INTO item_orden (
         orden_id,
         producto_id,
@@ -397,26 +411,21 @@ BEGIN
         subtotal,
         iva,
         total,
-        notas,
-        fecha_creacion,
-        fecha_actualizacion
+        notas
     )
     SELECT
         NEW.orden_id,
         NEW.producto_id,
         NEW.tamaño_id,
         NEW.cantidad,
-        p.precio_base * t.factor_precio, -- precio_unitario con factor aplicado
-        CASE WHEN p.aplica_iva THEN (p.precio_base * t.factor_precio) * 1.16 ELSE (p.precio_base * t.factor_precio) END, -- precio_con_iva
-        (p.precio_base * t.factor_precio) * NEW.cantidad, -- subtotal
-        CASE WHEN p.aplica_iva THEN ((p.precio_base * t.factor_precio) * NEW.cantidad) * 0.16 ELSE 0 END, -- iva
-        CASE WHEN p.aplica_iva THEN ((p.precio_base * t.factor_precio) * NEW.cantidad) * 1.16 ELSE (p.precio_base * t.factor_precio) * NEW.cantidad END, -- total
-        NEW.notas,
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP
-    FROM producto p
-             JOIN tamaño_producto t ON t.id = NEW.tamaño_id
-    WHERE p.id = NEW.producto_id;
+        p.precio_base * t.factor_precio,
+        CASE WHEN p.aplica_iva THEN (p.precio_base * t.factor_precio) * 1.16 ELSE p.precio_base * t.factor_precio END,
+        (p.precio_base * t.factor_precio) * NEW.cantidad,
+        CASE WHEN p.aplica_iva THEN ((p.precio_base * t.factor_precio) * NEW.cantidad) * 0.16 ELSE 0 END,
+        CASE WHEN p.aplica_iva THEN ((p.precio_base * t.factor_precio) * NEW.cantidad) * 1.16 ELSE (p.precio_base * t.factor_precio) * NEW.cantidad END,
+        NEW.notas
+    FROM producto p, tamaño_producto t
+    WHERE p.id = NEW.producto_id AND t.id = NEW.tamaño_id;
 END;
 
 -- Trigger para calcular precio con IVA, subtotal y total en item_orden al actualizar

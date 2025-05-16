@@ -93,14 +93,23 @@ public class OrdenDAO extends AbstractDAO<Orden, Integer> {
     }
 
     private Orden mapear(ResultSet rs) throws SQLException {
-        EstadoOrden estado = new EstadoOrden();
-        estado.setId(rs.getInt("estado_id"));
+        EstadoOrdenDAO estadoDAO = new EstadoOrdenDAO();
+        EstadoMesaDAO estadoMesaDAO = new EstadoMesaDAO();
+        MesaDAO mesaDAO = new MesaDAO(estadoMesaDAO);
+        RolDAO rolDAO = new RolDAO();
+        EmpleadoDAO empleadoDAO = new EmpleadoDAO(rolDAO);
 
-        Mesa mesa = new Mesa();
-        mesa.setId(rs.getInt("mesa_id"));
+        Mesa mesa = null;
+        Empleado mesero = null;
+        EstadoOrden estado = null;
 
-        Empleado mesero = new Empleado();
-        mesero.setId(rs.getInt("mesero_id"));
+        try {
+            mesa = mesaDAO.buscarPorId(rs.getInt("mesero_id"));
+            mesero = empleadoDAO.buscarPorId(rs.getInt("mesero_id"));
+            estado = estadoDAO.buscarPorId(rs.getInt("estado_id"));
+        } catch (DAOException e) {
+            throw new RuntimeException(e);
+        }
 
         return Orden.builder()
                 .id(rs.getInt("id"))

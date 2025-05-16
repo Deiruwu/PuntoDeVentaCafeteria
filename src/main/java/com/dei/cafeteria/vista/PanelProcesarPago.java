@@ -10,6 +10,7 @@ import com.dei.cafeteria.modelo.ItemOrden;
 import com.dei.cafeteria.modelo.Pago;
 import com.dei.cafeteria.modelo.MetodoPago;
 import com.dei.cafeteria.modelo.Empleado;
+import com.dei.cafeteria.util.GeneradorPDF;
 
 
 import javax.swing.*;
@@ -190,7 +191,7 @@ public class PanelProcesarPago extends JPanel {
         gbcPago.insets = new Insets(5, 10, 5, 10);
         gbcPago.anchor = GridBagConstraints.WEST;
 
-        // Método de pago
+        // Metodo de pago
         gbcPago.gridx = 0;
         gbcPago.gridy = 0;
         gbcPago.fill = GridBagConstraints.NONE;
@@ -309,7 +310,7 @@ public class PanelProcesarPago extends JPanel {
     }
 
     private void establecerEventos() {
-        // Evento al cambiar método de pago
+        // Evento al cambiar metodo de pago
         cbMetodoPago.addActionListener(e -> {
             MetodoPago metodoPago = (MetodoPago) cbMetodoPago.getSelectedItem();
             if (metodoPago != null && metodoPago.getId() == 2) { // ID 2 = Tarjeta
@@ -328,7 +329,7 @@ public class PanelProcesarPago extends JPanel {
         btnProcesarPago.addActionListener(e -> procesarPago());
 
         // Evento para imprimir ticket
-        btnImprimirTicket.addActionListener(e -> imprimirTicket());
+        //btnImprimirTicket.addActionListener(e -> imprimirTicket());
 
         // Evento para cancelar
         btnCancelar.addActionListener(e -> limpiarPantalla());
@@ -411,17 +412,15 @@ public class PanelProcesarPago extends JPanel {
 
     private void cargarItemsOrden(int ordenId) {
         try {
-            // Limpiar tabla
             modeloTabla.setRowCount(0);
 
-            // Cargar items --************************+ ALERTA CUIDADO NO SË COMO DEBERIA FUNCIONAR
-            ItemOrden item = itemOrdenDAO.buscarPorId(ordenId);
+            List<ItemOrden> items = itemOrdenDAO.buscarPorOrdenID(ordenId);
 
-
+            for (ItemOrden item : items) {
                 Object[] fila = {
                         item.getId(),
-                        item.getProducto().getNombre(),
-                        item.getTamaño().getNombre(),
+                        item.getProducto() != null ? item.getProducto().getNombre() : "—",
+                        item.getTamaño() != null ? item.getTamaño().getNombre() : "—",
                         item.getCantidad(),
                         formatoMoneda.format(item.getPrecioUnitario()),
                         formatoMoneda.format(item.getSubtotal()),
@@ -429,6 +428,7 @@ public class PanelProcesarPago extends JPanel {
                         formatoMoneda.format(item.getTotal())
                 };
                 modeloTabla.addRow(fila);
+            }
 
         } catch (DAOException e) {
             JOptionPane.showMessageDialog(this,
@@ -437,6 +437,7 @@ public class PanelProcesarPago extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void actualizarTotales() {
         if (ordenActual != null) {
@@ -544,13 +545,15 @@ public class PanelProcesarPago extends JPanel {
                 return;
             }
 
+            System.out.println("Cajero ID: " + cajeroActual.getId());
+
             // Crear y guardar el pago
             Pago pago = Pago.builder()
                     .orden(ordenActual)
-                    .metodoPago(metodoPago)
-                    .monto(montoRecibido)
-                    .cambio(montoRecibido - ordenActual.getTotal())
                     .fechaHora(LocalDateTime.now())
+                    .monto(montoRecibido)
+                    .metodoPago(metodoPago)
+                    .cambio(montoRecibido - ordenActual.getTotal())
                     .cajero(cajeroActual).build();
 
 
@@ -581,7 +584,8 @@ public class PanelProcesarPago extends JPanel {
                     JOptionPane.YES_NO_OPTION);
 
             if (respuesta == JOptionPane.YES_OPTION) {
-                imprimirTicket();
+                imprimirTicket(pago);
+
             }
 
         } catch (NumberFormatException e) {
@@ -597,53 +601,54 @@ public class PanelProcesarPago extends JPanel {
         }
     }
 
-    private void imprimirTicket() {
+    private void imprimirTicket(Pago pago) {
         if (ordenActual == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No hay una orden activa para imprimir",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (pago == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No se encontró información de pago para esta orden",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
-            // Generar un número de ticket (orden ID + timestamp)
-            String numeroTicket = ordenActual.getId() + "_" + System.currentTimeMillis();
+            // Generar PDF utilizando la clase utilitaria
+            GeneradorPDF generador = new GeneradorPDF();
+            String rutaPDF = generador.generarTicket(pago);
 
-            // Obtener información del pago
-            Pago pago = pagoDAO.buscarPorId(ordenActual.getId());
-
-            if (pago == null) {
+            // Verificar que se haya generado correctamente el PDF
+            if (rutaPDF == null) {
                 JOptionPane.showMessageDialog(this,
-                        "No se encontró información de pago para esta orden",
+                        "Error al generar el archivo PDF del ticket",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Crear ticket usando la utilidad GeneradorPDF
-            /*
-            GeneradorPDF generador = new GeneradorPDF();
-            String rutaPDF = generador.generarTicket(
-                    numeroTicket,
-                    ordenActual,
-                    itemOrdenDAO.buscarPorOrdenId(ordenActual.getId()),
-                    pago,
-                    cajeroActual);
-
             JOptionPane.showMessageDialog(this,
                     "Ticket generado exitosamente: " + rutaPDF,
                     "Ticket Generado",
-                    JOptionPane.INFORMATION_MESSAGE); */
+                    JOptionPane.INFORMATION_MESSAGE);
 
-            // Opcional: Abrir el PDF
             try {
-                //Desktop.getDesktop().open(new java.io.File(rutaPDF));
+                Desktop.getDesktop().open(new java.io.File(rutaPDF));
             } catch (Exception e) {
                 System.out.println("No se pudo abrir el archivo PDF: " + e.getMessage());
             }
 
-        } catch (DAOException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                     "Error al generar el ticket: " + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 

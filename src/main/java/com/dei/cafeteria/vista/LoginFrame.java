@@ -551,15 +551,30 @@ public class LoginFrame extends JFrame {
             // Obtener el rol a través del empleado
             String rolNombre = usuario.getEmpleado().getRol().getNombre().toLowerCase();
 
-            // Implementación simplificada para abrir la vista correspondiente
-            mostrarMensaje("Abriendo panel para: " + rolNombre, "Información", JOptionPane.INFORMATION_MESSAGE);
+            switch (rolNombre) {
+                case "mesero":
+                    // Abrir vista para mesero
+                    VistaMesero vistaMesero = new VistaMesero(usuario.getEmpleado());
+                    vistaMesero.setVisible(true);  // Asumiendo que extiende JFrame u otra ventana Swing
+                    mostrarMensaje("Abriendo panel para: Mesero", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    break;
 
-            // TODO: Implementar apertura de vista según el rol
-            // La implementación dependerá de la estructura de tu aplicación
+                case "cajero":
+                    // Abrir vista para cajero
+                    VistaCajero vistaCajero = new VistaCajero(usuario.getEmpleado());
+                    vistaCajero.setVisible(true);
+                    mostrarMensaje("Abriendo panel para: Cajero", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    break;
+
+                default:
+                    mostrarMensaje("Rol no reconocido: " + rolNombre, "Error", JOptionPane.ERROR_MESSAGE);
+                    break;
+            }
         } catch (Exception e) {
             mostrarMensaje("Error al abrir el sistema principal: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     /**
      * Método principal para pruebas
