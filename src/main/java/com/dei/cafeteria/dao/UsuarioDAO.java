@@ -127,9 +127,9 @@ public class UsuarioDAO extends AbstractDAO<Usuario, Integer> {
      * @return Lista de usuarios del empleado
      * @throws DAOException Si ocurre un error al buscar
      */
-    public List<Usuario> buscarPorEmpleado(int empleadoId) throws DAOException {
+    public Usuario buscarPorEmpleado(int empleadoId) throws DAOException {
         try {
-            return ejecutarQuery(FIND_BY_EMPLEADO, this::mapearUsuario, empleadoId);
+            return ejecutarQueryUnico(FIND_BY_EMPLEADO, this::mapearUsuario, empleadoId);
         } catch (SQLException e) {
             throw new DAOException("Error al buscar usuarios por empleado: " + e.getMessage(), e);
         }

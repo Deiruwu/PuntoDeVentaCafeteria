@@ -14,4 +14,9 @@ public class Rol {
     private String descripcion;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

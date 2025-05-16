@@ -18,7 +18,8 @@ public class Producto {
     private Boolean disponible;
     private Double stockActual;
     private Double stockMinimo;
-    private String imagenUrl;
+    @Builder.Default
+    private String imagenUrl = "/imagenes/productos/default.png";
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
 
