@@ -8,6 +8,7 @@ import com.dei.cafeteria.modelo.Empleado;
 import com.dei.cafeteria.modelo.EstadoOrden;
 import com.dei.cafeteria.modelo.ItemOrden;
 import com.dei.cafeteria.modelo.Orden;
+import com.dei.cafeteria.util.ColorPaleta;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -25,7 +26,7 @@ import java.util.List;
 public class PanelGestionOrdenes extends JPanel {
 
     private Empleado meseroActual;
-    private VistaMesero vistaMesero; // Referencia a la vista mesero para recargar mesas
+    private ColorPaleta ColorPaleta; // Referencia a la vista mesero para recargar mesas
 
     // Componentes de la interfaz
     private JComboBox<String> cbFiltroEstado;
@@ -69,7 +70,7 @@ public class PanelGestionOrdenes extends JPanel {
     public PanelGestionOrdenes(Empleado meseroActual) {
         this.meseroActual = meseroActual;
         setLayout(new BorderLayout());
-        setBackground(VistaMesero.COLOR_CREMA);
+        setBackground(ColorPaleta.CREMA.getColor());
 
         inicializarDAO();
         inicializarComponentes();
@@ -86,7 +87,7 @@ public class PanelGestionOrdenes extends JPanel {
     private void inicializarComponentes() {
         // Panel superior con título y filtros
         JPanel panelSuperior = new JPanel(new GridBagLayout());
-        panelSuperior.setBackground(VistaMesero.COLOR_CREMA);
+        panelSuperior.setBackground(ColorPaleta.CREMA.getColor());
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -98,16 +99,16 @@ public class PanelGestionOrdenes extends JPanel {
 
         JLabel lblTitulo = new JLabel("Gestión de Órdenes");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitulo.setForeground(VistaMesero.COLOR_AZUL);
+        lblTitulo.setForeground(ColorPaleta.AZUL.getColor());
         panelSuperior.add(lblTitulo, gbc);
 
         // Panel de filtros
         JPanel panelFiltros = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelFiltros.setBackground(VistaMesero.COLOR_CREMA);
+        panelFiltros.setBackground(ColorPaleta.CREMA.getColor());
 
         JLabel lblFiltroEstado = new JLabel("Estado:");
         lblFiltroEstado.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblFiltroEstado.setForeground(VistaMesero.COLOR_AZUL);
+        lblFiltroEstado.setForeground(ColorPaleta.AZUL.getColor());
 
         cbFiltroEstado = new JComboBox<>(new String[]{
                 "Todos", "PENDIENTE", "EN PREPARACIÓN", "LISTA", "ENTREGADA", "PAGADA", "CANCELADA"
@@ -117,12 +118,12 @@ public class PanelGestionOrdenes extends JPanel {
 
         JLabel lblBuscar = new JLabel("Buscar:");
         lblBuscar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblBuscar.setForeground(VistaMesero.COLOR_AZUL);
+        lblBuscar.setForeground(ColorPaleta.AZUL.getColor());
 
         txtBuscar = new JTextField(15);
         txtBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtBuscar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, VistaMesero.COLOR_AZUL),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, ColorPaleta.AZUL.getColor()),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
@@ -145,7 +146,7 @@ public class PanelGestionOrdenes extends JPanel {
         // Panel central para las órdenes
         panelOrdenes = new JPanel();
         panelOrdenes.setLayout(new BoxLayout(panelOrdenes, BoxLayout.Y_AXIS));
-        panelOrdenes.setBackground(VistaMesero.COLOR_CREMA);
+        panelOrdenes.setBackground(ColorPaleta.CREMA.getColor());
 
         scrollOrdenes = new JScrollPane(panelOrdenes);
         scrollOrdenes.setBorder(null);
@@ -205,7 +206,7 @@ public class PanelGestionOrdenes extends JPanel {
         if (ordenes.isEmpty()) {
             JLabel lblNoOrdenes = new JLabel("No hay órdenes para mostrar");
             lblNoOrdenes.setFont(new Font("Segoe UI", Font.ITALIC, 16));
-            lblNoOrdenes.setForeground(VistaMesero.COLOR_AZUL);
+            lblNoOrdenes.setForeground(ColorPaleta.AZUL.getColor());
             lblNoOrdenes.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             panelOrdenes.add(Box.createVerticalGlue());
@@ -239,7 +240,7 @@ public class PanelGestionOrdenes extends JPanel {
 
         JLabel lblOrdenId = new JLabel("Orden #" + orden.getId());
         lblOrdenId.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblOrdenId.setForeground(VistaMesero.COLOR_AZUL);
+        lblOrdenId.setForeground(ColorPaleta.AZUL.getColor());
 
         JLabel lblMesa = new JLabel("Mesa: " + orden.getMesa().getNumero());
         lblMesa.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -271,7 +272,7 @@ public class PanelGestionOrdenes extends JPanel {
 
         JButton btnVerDetalles = new JButton("Ver Detalles");
         btnVerDetalles.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btnVerDetalles.setBackground(VistaMesero.COLOR_AMBAR);
+        btnVerDetalles.setBackground(ColorPaleta.AMBAR.getColor());
         btnVerDetalles.setForeground(Color.WHITE);
         btnVerDetalles.setBorderPainted(false);
         btnVerDetalles.setFocusPainted(false);
@@ -283,14 +284,14 @@ public class PanelGestionOrdenes extends JPanel {
         if (orden.getEstadoId() == 1) { // PENDIENTE
             JButton btnCancelar = new JButton("Cancelar");
             btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btnCancelar.setBackground(VistaMesero.COLOR_TERRACOTA);
+            btnCancelar.setBackground(ColorPaleta.TERRACOTA.getColor());
             btnCancelar.setForeground(Color.WHITE);
             btnCancelar.setBorderPainted(false);
             btnCancelar.setFocusPainted(false);
 
             JButton btnEntregar = new JButton("Entregar");
             btnEntregar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btnEntregar.setBackground(VistaMesero.COLOR_VERDE);
+            btnEntregar.setBackground(ColorPaleta.VERDE.getColor());
             btnEntregar.setForeground(Color.WHITE);
             btnEntregar.setBorderPainted(false);
             btnEntregar.setFocusPainted(false);
@@ -310,7 +311,7 @@ public class PanelGestionOrdenes extends JPanel {
         } else if (orden.getEstadoId() == 2) { // EN PREPARACIÓN
             JButton btnCancelar = new JButton("Cancelar");
             btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btnCancelar.setBackground(VistaMesero.COLOR_TERRACOTA);
+            btnCancelar.setBackground(ColorPaleta.TERRACOTA.getColor());
             btnCancelar.setForeground(Color.WHITE);
             btnCancelar.setBorderPainted(false);
             btnCancelar.setFocusPainted(false);
@@ -321,7 +322,7 @@ public class PanelGestionOrdenes extends JPanel {
         } else if (orden.getEstadoId() == 3) { // LISTA
             JButton btnEntregar = new JButton("Entregar");
             btnEntregar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btnEntregar.setBackground(VistaMesero.COLOR_VERDE);
+            btnEntregar.setBackground(ColorPaleta.VERDE.getColor());
             btnEntregar.setForeground(Color.WHITE);
             btnEntregar.setBorderPainted(false);
             btnEntregar.setFocusPainted(false);
@@ -332,7 +333,7 @@ public class PanelGestionOrdenes extends JPanel {
         } else if (orden.getEstadoId() == 4) { // ENTREGADA
             JButton btnMarcarPagada = new JButton("Marcar Pagada");
             btnMarcarPagada.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            btnMarcarPagada.setBackground(VistaMesero.COLOR_AZUL);
+            btnMarcarPagada.setBackground(ColorPaleta.AZUL.getColor());
             btnMarcarPagada.setForeground(Color.WHITE);
             btnMarcarPagada.setBorderPainted(false);
             btnMarcarPagada.setFocusPainted(false);

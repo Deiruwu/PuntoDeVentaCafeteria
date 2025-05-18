@@ -1,16 +1,15 @@
 package com.dei.cafeteria.vista;
 
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
 
-import com.dei.cafeteria.dao.DAOException;
-import com.dei.cafeteria.dao.EmpleadoDAO;
-import com.dei.cafeteria.dao.RolDAO;
+import com.dei.cafeteria.controlador.ControladorMesero;
+import com.dei.cafeteria.dao.*;
 import com.dei.cafeteria.modelo.Empleado;
-
+import com.dei.cafeteria.util.ColorPaleta;
+import com.dei.cafeteria.vista.componentes.PanelInfoEmpleado;
+import com.dei.cafeteria.vista.util.ComponentFactory;
+import lombok.Getter;
 
 /**
  * Clase principal que integra todos los componentes del módulo Mesero
@@ -18,13 +17,7 @@ import com.dei.cafeteria.modelo.Empleado;
 public class VistaMesero extends JFrame {
 
     private Empleado meseroActual;
-
-    // Constantes para colores según la paleta especificada
-    public static final Color COLOR_TERRACOTA = new Color(140, 94, 88);  // #8C5E58
-    public static final Color COLOR_AZUL = new Color(44, 59, 71);       // #2C3B47
-    public static final Color COLOR_CREMA = new Color(232, 218, 203);   // #E8DACB
-    public static final Color COLOR_VERDE = new Color(97, 112, 91);     // #61705B
-    public static final Color COLOR_AMBAR = new Color(212, 146, 93);    // #D4925D
+    private ControladorMesero controlador;
 
     // Paneles principales
     private JPanel panelPrincipal;
@@ -32,10 +25,7 @@ public class VistaMesero extends JFrame {
     private JPanel panelMenu;
 
     // Panel para la información del empleado
-    private JPanel panelInfoEmpleado;
-    private JLabel lblFotoEmpleado;
-    private JLabel lblNombreEmpleado;
-    private JLabel lblIdEmpleado;
+    private PanelInfoEmpleado panelInfoEmpleado;
 
     // Componentes del menú
     private JButton btnMesas;
@@ -43,17 +33,20 @@ public class VistaMesero extends JFrame {
     private JButton btnTomarOrden;
     private JButton btnEnviarPedido;
     private JButton btnGestionOrdenes;
+
+    // Getters para los paneles (para el controlador)
     // Paneles de contenido
+    @Getter
     private PanelMesas panelMesas;
+    @Getter
     private PanelProductos panelProductos;
+    @Getter
     private PanelTomarOrden panelTomarOrden;
+    @Getter
     private PanelGestionOrdenes panelGestionOrdenes;
 
-
-    // Panel actual mostrado
-    private JPanel panelActual;
-
-    public VistaMesero(Empleado meseroActual) {
+    public VistaMesero(ControladorMesero controlador, Empleado meseroActual) {
+        this.controlador = controlador;
         this.meseroActual = meseroActual;
         configurarVentana();
         inicializarComponentes();
@@ -69,31 +62,42 @@ public class VistaMesero extends JFrame {
 
         // Configurar el panel principal con BorderLayout
         panelPrincipal = new JPanel(new BorderLayout());
-        panelPrincipal.setBackground(COLOR_CREMA);
+        panelPrincipal.setBackground(ColorPaleta.CREMA.getColor());
         setContentPane(panelPrincipal);
     }
 
     private void inicializarComponentes() {
         // Crear panel de menú lateral
+        inicializarPanelMenu();
+
+        // Crear panel de contenido principal
+        inicializarPanelContenido();
+
+        // Añadir componentes al panel principal
+        panelPrincipal.add(panelMenu, BorderLayout.WEST);
+        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
+    }
+
+    private void inicializarPanelMenu() {
         panelMenu = new JPanel();
         panelMenu.setLayout(new BoxLayout(panelMenu, BoxLayout.Y_AXIS));
-        panelMenu.setBackground(COLOR_AZUL);
+        panelMenu.setBackground(ColorPaleta.AZUL.getColor());
         panelMenu.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         panelMenu.setPreferredSize(new Dimension(200, getHeight()));
 
-        // Agregar panel para la información del empleado
-        crearPanelInfoEmpleado();
+        // Crear panel info empleado
+        panelInfoEmpleado = new PanelInfoEmpleado(meseroActual);
 
-        // Crear botones del menú con estilo personalizado
-        btnMesas = crearBotonMenu("Mesas");
-        btnProductos = crearBotonMenu("Productos");
-        btnGestionOrdenes = crearBotonMenu("Ordenes");
-        btnTomarOrden = crearBotonMenu("Tomar Orden");
-        btnEnviarPedido = crearBotonMenu("Enviar Pedido");
+        // Crear botones del menú
+        btnMesas = ComponentFactory.crearBotonMenu("Mesas");
+        btnProductos = ComponentFactory.crearBotonMenu("Productos");
+        btnGestionOrdenes = ComponentFactory.crearBotonMenu("Ordenes");
+        btnTomarOrden = ComponentFactory.crearBotonMenu("Tomar Orden");
+        btnEnviarPedido = ComponentFactory.crearBotonMenu("Enviar Pedido");
 
-        // Añadir botones al menú
+        // Añadir componentes al menú
         panelMenu.add(Box.createVerticalStrut(20));
-        panelMenu.add(crearLabelMenu("MESERO"));
+        panelMenu.add(ComponentFactory.crearLabelMenu("MESERO"));
         panelMenu.add(Box.createVerticalStrut(20));
         panelMenu.add(panelInfoEmpleado);
         panelMenu.add(Box.createVerticalStrut(40));
@@ -107,10 +111,11 @@ public class VistaMesero extends JFrame {
         panelMenu.add(Box.createVerticalStrut(15));
         panelMenu.add(btnEnviarPedido);
         panelMenu.add(Box.createVerticalGlue());
+    }
 
-        // Crear panel de contenido principal (donde se cargarán las diferentes vistas)
+    private void inicializarPanelContenido() {
         panelContenido = new JPanel(new CardLayout());
-        panelContenido.setBackground(COLOR_CREMA);
+        panelContenido.setBackground(ColorPaleta.CREMA.getColor());
 
         // Inicializar los paneles específicos
         panelMesas = new PanelMesas();
@@ -123,122 +128,6 @@ public class VistaMesero extends JFrame {
         panelContenido.add(panelProductos, "productos");
         panelContenido.add(panelGestionOrdenes, "gestionOrdenes");
         panelContenido.add(panelTomarOrden, "tomarOrden");
-
-        // Añadir componentes al panel principal
-        panelPrincipal.add(panelMenu, BorderLayout.WEST);
-        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
-    }
-
-    private void crearPanelInfoEmpleado() {
-        panelInfoEmpleado = new JPanel();
-        panelInfoEmpleado.setLayout(new BoxLayout(panelInfoEmpleado, BoxLayout.Y_AXIS));
-        panelInfoEmpleado.setBackground(COLOR_AZUL);
-        panelInfoEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panelInfoEmpleado.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panelInfoEmpleado.setMaximumSize(new Dimension(180, 200));
-
-        // Cargar la foto del empleado
-        String rutaImagen = meseroActual.getImagenUrl();
-        ImageIcon imagenEmpleado = null;
-
-        if (rutaImagen != null && !rutaImagen.isEmpty()) {
-            if (rutaImagen.contains("/imagenes/")) {
-                int indice = rutaImagen.indexOf("/imagenes/");
-                rutaImagen = rutaImagen.substring(indice + 1);
-            }
-
-            // Intentar cargar la imagen
-            try {
-                File archivo = new File(rutaImagen);
-                if (archivo.exists()) {
-                    imagenEmpleado = new ImageIcon(rutaImagen);
-                } else {
-                    // Si no existe, usar una imagen por defecto
-                    imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
-                }
-            } catch (Exception e) {
-                System.err.println("Error al cargar la imagen del empleado: " + e.getMessage());
-                imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
-            }
-        } else {
-            // Si no hay URL, usar imagen por defecto
-            imagenEmpleado = new ImageIcon("imagenes/empleado_default.png");
-        }
-
-        // Redimensionar imagen si es necesario
-        if (imagenEmpleado != null) {
-            Image img = imagenEmpleado.getImage();
-            Image imgRedimensionada = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
-            imagenEmpleado = new ImageIcon(imgRedimensionada);
-        }
-
-        // Crear componentes de información del empleado
-        lblFotoEmpleado = new JLabel();
-        lblFotoEmpleado.setIcon(imagenEmpleado);
-        lblFotoEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Crear círculo para la foto
-        lblFotoEmpleado.setBorder(BorderFactory.createLineBorder(COLOR_CREMA, 2));
-
-        // Obtener nombre del empleado
-        String nombreEmpleado = meseroActual.getNombre();
-        if (nombreEmpleado == null || nombreEmpleado.isEmpty()) {
-            nombreEmpleado = "Empleado";
-        }
-
-        lblNombreEmpleado = new JLabel(nombreEmpleado);
-        lblNombreEmpleado.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblNombreEmpleado.setForeground(COLOR_CREMA);
-        lblNombreEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Obtener ID del empleado
-        int idEmpleado = meseroActual.getId();
-        lblIdEmpleado = new JLabel("ID: " + idEmpleado);
-        lblIdEmpleado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblIdEmpleado.setForeground(COLOR_CREMA);
-        lblIdEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Agregar componentes al panel
-        panelInfoEmpleado.add(lblFotoEmpleado);
-        panelInfoEmpleado.add(Box.createVerticalStrut(10));
-        panelInfoEmpleado.add(lblNombreEmpleado);
-        panelInfoEmpleado.add(Box.createVerticalStrut(5));
-        panelInfoEmpleado.add(lblIdEmpleado);
-    }
-
-    private JButton crearBotonMenu(String texto) {
-        JButton boton = new JButton(texto);
-        boton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        boton.setMaximumSize(new Dimension(180, 40));
-        boton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        boton.setForeground(Color.WHITE);
-        boton.setBackground(COLOR_AZUL);
-        boton.setFocusPainted(false);
-        boton.setBorderPainted(false);
-        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        // Efecto hover
-        boton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                boton.setBackground(COLOR_TERRACOTA);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                boton.setBackground(COLOR_AZUL);
-            }
-        });
-
-        return boton;
-    }
-
-    private JLabel crearLabelMenu(String texto) {
-        JLabel label = new JLabel(texto);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        label.setForeground(COLOR_CREMA);
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        return label;
     }
 
     private void establecerEventos() {
@@ -246,32 +135,15 @@ public class VistaMesero extends JFrame {
         btnProductos.addActionListener(e -> mostrarPanel("productos"));
         btnTomarOrden.addActionListener(e -> mostrarPanel("tomarOrden"));
         btnGestionOrdenes.addActionListener(e -> mostrarPanel("gestionOrdenes"));
-        btnEnviarPedido.addActionListener(e -> enviarPedido());
+        btnEnviarPedido.addActionListener(e -> controlador.enviarPedido());
     }
 
-    private void mostrarPanel(String nombrePanel) {
+    public void mostrarPanel(String nombrePanel) {
         CardLayout cl = (CardLayout) panelContenido.getLayout();
         cl.show(panelContenido, nombrePanel);
     }
 
-    private void enviarPedido() {
-        if (panelTomarOrden.validarPedido()) {
-            JOptionPane.showMessageDialog(this,
-                    "Pedido enviado correctamente",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-            panelTomarOrden.limpiarPedido();
-            panelMesas.recargarMesas();
-            panelGestionOrdenes.actualizarOrdenes();
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "No hay un pedido válido para enviar",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    // Metodo principal para probar la interfaz
+    // Punto de entrada principal modificado para usar el controlador
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -279,26 +151,29 @@ public class VistaMesero extends JFrame {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
                 // Personalizar componentes globalmente
-                UIManager.put("Button.background", COLOR_CREMA);
-                UIManager.put("Button.foreground", COLOR_AZUL);
-                UIManager.put("Panel.background", COLOR_CREMA);
-                UIManager.put("Label.foreground", COLOR_AZUL);
-                UIManager.put("TextField.caretForeground", COLOR_AZUL);
+                UIManager.put("Button.background", ColorPaleta.CREMA.getColor());
+                UIManager.put("Button.foreground", ColorPaleta.AZUL.getColor());
+                UIManager.put("Panel.background", ColorPaleta.CREMA.getColor());
+                UIManager.put("Label.foreground", ColorPaleta.AZUL.getColor());
+                UIManager.put("TextField.caretForeground", ColorPaleta.AZUL.getColor());
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            RolDAO rolDAO = new RolDAO();
-            EmpleadoDAO empleadoDAO = new EmpleadoDAO(rolDAO);
-            Empleado empleado = null;
-            try {
-                empleado = empleadoDAO.buscarPorId(2);
-            } catch (DAOException e) {
-                throw new RuntimeException(e);
-            }
 
-            VistaMesero vista = new VistaMesero(empleado);
-            vista.setVisible(true);
+            try {
+                RolDAO rolDAO = new RolDAO();
+                EmpleadoDAO empleadoDAO = new EmpleadoDAO(rolDAO);
+                Empleado empleado = empleadoDAO.buscarPorId(2);
+
+                ControladorMesero controlador = new ControladorMesero(empleado);
+                controlador.mostrarVista();
+            } catch (DAOException e) {
+                JOptionPane.showMessageDialog(null,
+                        "Error al cargar datos del empleado: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         });
     }
 }

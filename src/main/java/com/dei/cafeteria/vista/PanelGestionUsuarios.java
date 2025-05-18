@@ -130,6 +130,7 @@ public class PanelGestionUsuarios extends JPanel {
 
     private void configurarPanelFiltros() {
         panelFiltros = new JPanel();
+
         panelFiltros.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         panelFiltros.setBackground(COLOR_CREMA);
         panelFiltros.setBorder(BorderFactory.createTitledBorder(

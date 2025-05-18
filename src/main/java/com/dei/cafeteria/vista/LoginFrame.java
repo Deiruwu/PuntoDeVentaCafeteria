@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 
+import com.dei.cafeteria.controlador.ControladorMesero;
 import com.dei.cafeteria.dao.UsuarioDAO;
 import com.dei.cafeteria.dao.RolDAO;
 import com.dei.cafeteria.dao.EmpleadoDAO;
@@ -554,7 +555,7 @@ public class LoginFrame extends JFrame {
             switch (rolNombre) {
                 case "mesero":
                     // Abrir vista para mesero
-                    VistaMesero vistaMesero = new VistaMesero(usuario.getEmpleado());
+                    VistaMesero vistaMesero = new VistaMesero(new ControladorMesero(usuario.getEmpleado()), usuario.getEmpleado());
                     vistaMesero.setVisible(true);  // Asumiendo que extiende JFrame u otra ventana Swing
                     mostrarMensaje("Abriendo panel para: Mesero", "Información", JOptionPane.INFORMATION_MESSAGE);
                     break;
@@ -564,6 +565,13 @@ public class LoginFrame extends JFrame {
                     VistaCajero vistaCajero = new VistaCajero(usuario.getEmpleado());
                     vistaCajero.setVisible(true);
                     mostrarMensaje("Abriendo panel para: Cajero", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    break;
+
+                case "administrador":
+                    // Abrir vista para cajero
+                    VistaAdministrador vistaAdministrador = new VistaAdministrador(usuario.getEmpleado());
+                    vistaAdministrador.setVisible(true);
+                    mostrarMensaje("Abriendo panel para: Administrador", "Información", JOptionPane.INFORMATION_MESSAGE);
                     break;
 
                 default:
@@ -577,7 +585,7 @@ public class LoginFrame extends JFrame {
 
 
     /**
-     * Método principal para pruebas
+     * Metodo principal para pruebas
      *
      * @param args argumentos de línea de comandos
      */

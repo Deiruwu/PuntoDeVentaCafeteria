@@ -4,6 +4,7 @@ import com.dei.cafeteria.dao.MesaDAO;
 import com.dei.cafeteria.dao.EstadoMesaDAO;
 import com.dei.cafeteria.modelo.Mesa;
 import com.dei.cafeteria.dao.DAOException;
+import com.dei.cafeteria.util.ColorPaleta;
 import com.dei.cafeteria.vista.VistaMesero;
 
 import java.awt.*;
@@ -23,9 +24,9 @@ public class ControladorMesas {
 
     public Color getColor(int estadoMesa) {
         return switch (estadoMesa) {
-            case 1 -> VistaMesero.COLOR_VERDE;
-            case 2 -> VistaMesero.COLOR_TERRACOTA;
-            case 3 -> VistaMesero.COLOR_AMBAR;
+            case 1 -> ColorPaleta.VERDE.getColor();
+            case 2 -> ColorPaleta.TERRACOTA.getColor();
+            case 3 -> ColorPaleta.AMBAR.getColor();
             default -> Color.GRAY;
         };
     }

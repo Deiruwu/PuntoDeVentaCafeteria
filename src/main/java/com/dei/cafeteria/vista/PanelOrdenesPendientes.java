@@ -173,6 +173,9 @@ public class PanelOrdenesPendientes extends JPanel {
                     case "PAGADA":
                         estadoId = 5;
                         break;
+                    case "CANCELADA":
+                        estadoId = 6;
+                        break;
                 }
                 ordenes = ordenDAO.buscarPorEstado(estadoId);
             } else {
@@ -213,6 +216,7 @@ public class PanelOrdenesPendientes extends JPanel {
             case 3: return "LISTA";
             case 4: return "ENTREGADA";
             case 5: return "PAGADA";
+            case 6: return "CANCELADA";
             default: return "DESCONOCIDO";
         }
     }

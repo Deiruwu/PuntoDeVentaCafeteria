@@ -4,6 +4,7 @@ import com.dei.cafeteria.controlador.ControladorMesas;
 import com.dei.cafeteria.controlador.ControladorProductos;
 import com.dei.cafeteria.dao.*;
 import com.dei.cafeteria.modelo.*;
+import com.dei.cafeteria.util.ColorPaleta;
 
 
 import javax.swing.*;
@@ -18,7 +19,7 @@ import java.util.Map;
 /**
  * Panel para tomar órdenes/pedidos
  */
-class PanelTomarOrden extends JPanel {
+public class PanelTomarOrden extends JPanel {
 
     private Empleado meseroActual;
 
@@ -43,7 +44,7 @@ class PanelTomarOrden extends JPanel {
     public PanelTomarOrden(Empleado meseroActual) {
         this.meseroActual = meseroActual;
         setLayout(new BorderLayout());
-        setBackground(VistaMesero.COLOR_CREMA);
+        setBackground(ColorPaleta.CREMA.getColor());
         elementosPedido = new HashMap<>();
         clavesPedido = new ArrayList<>();
 
@@ -55,25 +56,25 @@ class PanelTomarOrden extends JPanel {
     private void inicializarComponentes() {
         // Panel superior con título y selección de mesa
         JPanel panelSuperior = new JPanel(new BorderLayout());
-        panelSuperior.setBackground(VistaMesero.COLOR_CREMA);
+        panelSuperior.setBackground(ColorPaleta.CREMA.getColor());
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JLabel lblTitulo = new JLabel("Tomar Orden");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitulo.setForeground(VistaMesero.COLOR_AZUL);
+        lblTitulo.setForeground(ColorPaleta.AZUL.getColor());
 
         JPanel panelMesa = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelMesa.setBackground(VistaMesero.COLOR_CREMA);
+        panelMesa.setBackground(ColorPaleta.CREMA.getColor());
 
         JLabel lblSeleccionMesa = new JLabel("Mesa:");
         lblSeleccionMesa.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblSeleccionMesa.setForeground(VistaMesero.COLOR_AZUL);
+        lblSeleccionMesa.setForeground(ColorPaleta.AZUL.getColor());
 
         cmbMesas = new JComboBox<>();
         cmbMesas.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cmbMesas.setPreferredSize(new Dimension(150, 30));
         cmbMesas.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, VistaMesero.COLOR_AZUL),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, ColorPaleta.AZUL.getColor()),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
@@ -92,18 +93,18 @@ class PanelTomarOrden extends JPanel {
         panelProductos.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel panelBusqueda = new JPanel(new BorderLayout());
-        panelBusqueda.setBackground(VistaMesero.COLOR_CREMA);
+        panelBusqueda.setBackground(ColorPaleta.CREMA.getColor());
 
         txtBuscarProducto = new JTextField();
         txtBuscarProducto.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, VistaMesero.COLOR_AZUL),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, ColorPaleta.AZUL.getColor()),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
         txtBuscarProducto.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         JButton btnBuscar = new JButton("Buscar");
         btnBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btnBuscar.setBackground(VistaMesero.COLOR_AMBAR);
+        btnBuscar.setBackground(ColorPaleta.AMBAR.getColor());
         btnBuscar.setForeground(Color.WHITE);
         btnBuscar.setBorderPainted(false);
         btnBuscar.setFocusPainted(false);
@@ -127,27 +128,27 @@ class PanelTomarOrden extends JPanel {
 
         // Panel de información de stock y cantidad - CORREGIDO: Mejor espaciado
         JPanel panelInfoAgregar = new JPanel(new BorderLayout(10, 0)); // Agregado espacio horizontal
-        panelInfoAgregar.setBackground(VistaMesero.COLOR_CREMA);
+        panelInfoAgregar.setBackground(ColorPaleta.CREMA.getColor());
         panelInfoAgregar.setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5)); // Agregado padding
 
         // Panel para mostrar el stock disponible
         JPanel panelStock = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        panelStock.setBackground(VistaMesero.COLOR_CREMA);
+        panelStock.setBackground(ColorPaleta.CREMA.getColor());
 
         lblStockDisponible = new JLabel("Stock disponible: -");
         lblStockDisponible.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblStockDisponible.setForeground(VistaMesero.COLOR_AZUL);
+        lblStockDisponible.setForeground(ColorPaleta.AZUL.getColor());
         lblStockDisponible.setPreferredSize(new Dimension(180, 30)); // Asegurar tamaño fijo
 
         panelStock.add(lblStockDisponible);
 
         // Panel de cantidad y agregar
         JPanel panelAgregar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0)); // Aumentado el espacio
-        panelAgregar.setBackground(VistaMesero.COLOR_CREMA);
+        panelAgregar.setBackground(ColorPaleta.CREMA.getColor());
 
         JLabel lblCantidad = new JLabel("Cantidad:");
         lblCantidad.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblCantidad.setForeground(VistaMesero.COLOR_AZUL);
+        lblCantidad.setForeground(ColorPaleta.AZUL.getColor());
 
         spnCantidad = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
         spnCantidad.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -155,7 +156,7 @@ class PanelTomarOrden extends JPanel {
 
         JButton btnAgregar = new JButton("Agregar");
         btnAgregar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btnAgregar.setBackground(VistaMesero.COLOR_VERDE);
+        btnAgregar.setBackground(ColorPaleta.VERDE.getColor());
         btnAgregar.setForeground(Color.WHITE);
         btnAgregar.setBorderPainted(false);
         btnAgregar.setFocusPainted(false);
@@ -190,7 +191,7 @@ class PanelTomarOrden extends JPanel {
 
         tablaProductosOrden = new JTable(modeloTablaProductos);
         tablaProductosOrden.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        tablaProductosOrden.getTableHeader().setBackground(VistaMesero.COLOR_CREMA);
+        tablaProductosOrden.getTableHeader().setBackground(ColorPaleta.CREMA.getColor());
         tablaProductosOrden.setRowHeight(30);
         tablaProductosOrden.setShowGrid(false);
 
@@ -202,11 +203,11 @@ class PanelTomarOrden extends JPanel {
 
         // Panel subtotal
         JPanel panelSubtotal = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelSubtotal.setBackground(VistaMesero.COLOR_CREMA);
+        panelSubtotal.setBackground(ColorPaleta.CREMA.getColor());
 
         lblSubtotal = new JLabel("Subtotal: $0.00");
         lblSubtotal.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblSubtotal.setForeground(VistaMesero.COLOR_TERRACOTA);
+        lblSubtotal.setForeground(ColorPaleta.TERRACOTA.getColor());
 
         panelSubtotal.add(lblSubtotal);
         panelPedido.add(scrollPedido, BorderLayout.CENTER);
@@ -531,7 +532,7 @@ class PanelTomarOrden extends JPanel {
     private class BotonEliminarRenderer extends JButton implements TableCellRenderer {
         public BotonEliminarRenderer() {
             setOpaque(true);
-            setBackground(VistaMesero.COLOR_TERRACOTA);
+            setBackground(ColorPaleta.TERRACOTA.getColor());
             setForeground(Color.WHITE);
             setBorderPainted(false);
         }
@@ -554,7 +555,7 @@ class PanelTomarOrden extends JPanel {
             super(new JCheckBox());
             this.tabla = tabla;
             button = new JButton("Eliminar");
-            button.setBackground(VistaMesero.COLOR_TERRACOTA);
+            button.setBackground(ColorPaleta.TERRACOTA.getColor());
             button.setForeground(Color.WHITE);
             button.setBorderPainted(false);
             button.setFocusPainted(false);

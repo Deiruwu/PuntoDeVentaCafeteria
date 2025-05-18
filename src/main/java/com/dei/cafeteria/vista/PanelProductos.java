@@ -3,6 +3,7 @@ package com.dei.cafeteria.vista;
 import com.dei.cafeteria.controlador.ControladorProductos;
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.modelo.Producto;
+import com.dei.cafeteria.util.ColorPaleta;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -35,7 +36,6 @@ class PanelProductos extends JPanel {
 
     private JButton categoriaSeleccionada;
 
-    // Lista simulada de productos (en producción se obtendría del DAO)
     private ControladorProductos controladorProductos;
     private List<Producto> listaProductos;
     private List<Producto> listaProductosFiltrada = new ArrayList<>();
@@ -50,7 +50,7 @@ class PanelProductos extends JPanel {
     public PanelProductos() {
         this.controladorProductos = new ControladorProductos();
         setLayout(new BorderLayout());
-        setBackground(VistaMesero.COLOR_CREMA);
+        setBackground(ColorPaleta.CREMA.getColor());
 
         inicializarComponentes();
         cargarProductosDesdeControlador();
@@ -59,22 +59,22 @@ class PanelProductos extends JPanel {
     private void inicializarComponentes() {
         // Panel superior con título y búsqueda
         panelSuperior = new JPanel(new BorderLayout());
-        panelSuperior.setBackground(VistaMesero.COLOR_CREMA);
+        panelSuperior.setBackground(ColorPaleta.CREMA.getColor());
         panelSuperior.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
         // Título
         lblTitulo = new JLabel("Catálogo de Productos");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitulo.setForeground(VistaMesero.COLOR_AZUL);
+        lblTitulo.setForeground(ColorPaleta.AZUL.getColor());
 
         // Panel de búsqueda
         JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelBusqueda.setBackground(VistaMesero.COLOR_CREMA);
+        panelBusqueda.setBackground(ColorPaleta.CREMA.getColor());
 
         txtBuscar = new JTextField(20);
         txtBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtBuscar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, VistaMesero.COLOR_AZUL),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, ColorPaleta.AZUL.getColor()),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
         // Agregar placeholder
@@ -84,7 +84,7 @@ class PanelProductos extends JPanel {
 
         btnBuscar = new JButton("Buscar");
         btnBuscar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btnBuscar.setBackground(VistaMesero.COLOR_AMBAR);
+        btnBuscar.setBackground(ColorPaleta.AMBAR.getColor());
         btnBuscar.setForeground(Color.WHITE);
         btnBuscar.setFocusPainted(false);
         btnBuscar.setBorderPainted(false);
@@ -98,7 +98,7 @@ class PanelProductos extends JPanel {
 
         // Panel de botones para categorías
         panelBotonesCategorias = new JPanel(new FlowLayout(FlowLayout.CENTER, 3, 5));
-        panelBotonesCategorias.setBackground(VistaMesero.COLOR_CREMA);
+        panelBotonesCategorias.setBackground(ColorPaleta.CREMA.getColor());
         panelBotonesCategorias.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20));
 
         // Inicializar los botones de categorías
@@ -120,7 +120,7 @@ class PanelProductos extends JPanel {
         // Panel para la lista de productos
         panelListaProductos = new JPanel();
         panelListaProductos.setLayout(new BoxLayout(panelListaProductos, BoxLayout.Y_AXIS));
-        panelListaProductos.setBackground(VistaMesero.COLOR_CREMA);
+        panelListaProductos.setBackground(ColorPaleta.CREMA.getColor());
         panelListaProductos.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
         // ScrollPane para la lista de productos
@@ -130,7 +130,7 @@ class PanelProductos extends JPanel {
 
         // Panel principal para organizar los componentes
         JPanel panelPrincipal = new JPanel(new BorderLayout());
-        panelPrincipal.setBackground(VistaMesero.COLOR_CREMA);
+        panelPrincipal.setBackground(ColorPaleta.CREMA.getColor());
 
         // Añadir el panel de botones al panel principal
         panelPrincipal.add(panelBotonesCategorias, BorderLayout.NORTH);
@@ -186,7 +186,7 @@ class PanelProductos extends JPanel {
     private JButton crearBotonCategoria(String texto) {
         JButton boton = new JButton(texto);
         boton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        boton.setForeground(VistaMesero.COLOR_AZUL);
+        boton.setForeground(ColorPaleta.AZUL.getColor());
         boton.setBackground(Color.WHITE);
         boton.setFocusPainted(false);
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -203,7 +203,7 @@ class PanelProductos extends JPanel {
             if (comp instanceof JButton) {
                 JButton btn = (JButton) comp;
                 btn.setBackground(Color.WHITE);
-                btn.setForeground(VistaMesero.COLOR_AZUL);
+                btn.setForeground(ColorPaleta.AZUL.getColor());
                 btn.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
                         BorderFactory.createEmptyBorder(5, 8, 5, 8)
@@ -212,10 +212,10 @@ class PanelProductos extends JPanel {
         }
 
         // Destacar el botón seleccionado
-        categoriaSeleccionada.setBackground(VistaMesero.COLOR_AZUL);
+        categoriaSeleccionada.setBackground(ColorPaleta.AZUL.getColor());
         categoriaSeleccionada.setForeground(Color.WHITE);
         categoriaSeleccionada.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(VistaMesero.COLOR_AZUL, 1),
+                BorderFactory.createLineBorder(ColorPaleta.AZUL.getColor(), 1),
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
     }
@@ -334,7 +334,7 @@ class PanelProductos extends JPanel {
                 categoriaActual = categoriaNombre;
                 JLabel lblCategoria = new JLabel(categoriaActual);
                 lblCategoria.setFont(new Font("Segoe UI", Font.BOLD, 18));
-                lblCategoria.setForeground(VistaMesero.COLOR_AZUL);
+                lblCategoria.setForeground(ColorPaleta.AZUL.getColor());
                 lblCategoria.setBorder(BorderFactory.createEmptyBorder(15, 5, 10, 0));
                 lblCategoria.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -348,7 +348,7 @@ class PanelProductos extends JPanel {
         if (listaProductosFiltrada.isEmpty()) {
             JLabel lblNoResultados = new JLabel("No se encontraron productos");
             lblNoResultados.setFont(new Font("Segoe UI", Font.ITALIC, 16));
-            lblNoResultados.setForeground(VistaMesero.COLOR_AZUL);
+            lblNoResultados.setForeground(ColorPaleta.AZUL.getColor());
             lblNoResultados.setAlignmentX(Component.CENTER_ALIGNMENT);
             lblNoResultados.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
@@ -496,7 +496,7 @@ class PanelProductos extends JPanel {
 
         JLabel lblNombre = new JLabel(producto.getNombre());
         lblNombre.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblNombre.setForeground(VistaMesero.COLOR_AZUL);
+        lblNombre.setForeground(ColorPaleta.AZUL.getColor());
 
         JLabel lblDescripcion = new JLabel(producto.getDescripcion());
         lblDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -511,7 +511,7 @@ class PanelProductos extends JPanel {
 
         JLabel lblPrecio = new JLabel(String.format("$%.2f", producto.getPrecioBase()));
         lblPrecio.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblPrecio.setForeground(VistaMesero.COLOR_AMBAR);
+        lblPrecio.setForeground(ColorPaleta.AMBAR.getColor());
 
         panelPrecio.add(lblPrecio);
 

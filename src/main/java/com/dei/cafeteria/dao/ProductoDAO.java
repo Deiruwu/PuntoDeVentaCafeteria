@@ -92,7 +92,7 @@ public class ProductoDAO extends AbstractDAO<Producto, Integer> {
     private Producto mapear(ResultSet rs) throws SQLException {
         CategoriaProducto categoria = new CategoriaProducto();
         categoria.setId(rs.getInt("categoria_id"));
-
+        String imagenUrl = rs.getString("imagen_url");
         return Producto.builder()
                 .id(rs.getInt("id"))
                 .nombre(rs.getString("nombre"))
@@ -103,7 +103,7 @@ public class ProductoDAO extends AbstractDAO<Producto, Integer> {
                 .disponible(rs.getBoolean("disponible"))
                 .stockActual(rs.getDouble("stock_actual"))
                 .stockMinimo(rs.getDouble("stock_minimo"))
-                .imagenUrl(rs.getString("imagen_url"))
+                .imagenUrl(imagenUrl.isEmpty() ? "/imagenes/productos/default.png" : imagenUrl)
                 .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
                 .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
                 .build();

@@ -8,9 +8,6 @@ import java.io.File;
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.dao.EmpleadoDAO;
 import com.dei.cafeteria.dao.RolDAO;
-import com.dei.cafeteria.dao.UsuarioDAO;
-import com.dei.cafeteria.dao.ProductoDAO;
-import com.dei.cafeteria.dao.OrdenDAO;
 import com.dei.cafeteria.modelo.Empleado;
 
 /**
@@ -46,7 +43,7 @@ public class VistaAdministrador extends JFrame {
 
     // Paneles de contenido
     private PanelGestionUsuarios panelGestionUsuarios;
-    //private PanelGestionProductos panelGestionProductos;
+    private PanelGestionProductos panelGestionProductos;
     private PanelGestionOrdenes panelGestionOrdenes;
     //private PanelConfiguracion panelConfiguracion;
 
@@ -101,8 +98,6 @@ public class VistaAdministrador extends JFrame {
         panelMenu.add(btnProductos);
         panelMenu.add(Box.createVerticalStrut(15));
         panelMenu.add(btnOrdenes);
-        panelMenu.add(Box.createVerticalStrut(15));
-        panelMenu.add(btnConfiguracion);
         panelMenu.add(Box.createVerticalGlue());
 
         // Crear panel de contenido principal (donde se cargarán las diferentes vistas)
@@ -111,13 +106,13 @@ public class VistaAdministrador extends JFrame {
 
         // Inicializar los paneles específicos
         panelGestionUsuarios = new PanelGestionUsuarios(administradorActual);
-        //panelGestionProductos = new PanelGestionProductos(administradorActual);
+        panelGestionProductos = new PanelGestionProductos();
         panelGestionOrdenes = new PanelGestionOrdenes(administradorActual);
         //panelConfiguracion = new PanelConfiguracion(administradorActual);
 
         // Añadir paneles al contenedor principal
         panelContenido.add(panelGestionUsuarios, "usuarios");
-        //panelContenido.add(panelGestionProductos, "productos");
+        panelContenido.add(panelGestionProductos, "productos");
         panelContenido.add(panelGestionOrdenes, "ordenes");
         //panelContenido.add(panelConfiguracion, "configuracion");
 
@@ -253,7 +248,7 @@ public class VistaAdministrador extends JFrame {
         if (nombrePanel.equals("usuarios")) {
             panelGestionUsuarios.cargarDatos();
         } else if (nombrePanel.equals("productos")) {
-            //panelGestionProductos.cargarDatos();
+            panelGestionProductos.cargarProductos();
         } else if (nombrePanel.equals("ordenes")) {
             //panelGestionOrdenes.cargarDatos();
         } else if (nombrePanel.equals("configuracion")) {
@@ -261,7 +256,7 @@ public class VistaAdministrador extends JFrame {
         }
     }
 
-    // Método principal para probar la interfaz
+    // Metodo principal para probar la interfaz
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {

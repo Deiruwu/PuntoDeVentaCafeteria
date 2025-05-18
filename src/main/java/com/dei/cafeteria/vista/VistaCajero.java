@@ -98,8 +98,8 @@ public class VistaCajero extends JFrame {
         panelMenu.add(btnPagos);
         panelMenu.add(Box.createVerticalStrut(15));
         panelMenu.add(btnHistorial);
-        panelMenu.add(Box.createVerticalStrut(15));
-        panelMenu.add(btnReportes);
+        //panelMenu.add(Box.createVerticalStrut(15));
+        //panelMenu.add(btnReportes);
         panelMenu.add(Box.createVerticalGlue());
 
         // Crear panel de contenido principal (donde se cargarán las diferentes vistas)

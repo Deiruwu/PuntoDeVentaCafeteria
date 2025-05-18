@@ -3,6 +3,7 @@ package com.dei.cafeteria.vista;
 import com.dei.cafeteria.controlador.ControladorMesas;
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.modelo.Mesa;
+import com.dei.cafeteria.util.ColorPaleta;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -28,7 +29,7 @@ public class PanelMesas extends JPanel {
     public PanelMesas() {
         this.controladorMesas = new ControladorMesas();
         setLayout(new BorderLayout());
-        setBackground(VistaMesero.COLOR_CREMA);
+        setBackground(ColorPaleta.CREMA.getColor());
 
         inicializarComponentes();
         cargarMesasDesdeControlador();
@@ -37,12 +38,12 @@ public class PanelMesas extends JPanel {
     private void inicializarComponentes() {
         lblTitulo = new JLabel("Mesas Disponibles");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitulo.setForeground(VistaMesero.COLOR_AZUL);
+        lblTitulo.setForeground(ColorPaleta.AZUL.getColor());
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 0));
 
         panelContenidoMesas = new JPanel();
         panelContenidoMesas.setLayout(new GridLayout(0, 3, 15, 15));
-        panelContenidoMesas.setBackground(VistaMesero.COLOR_CREMA);
+        panelContenidoMesas.setBackground(ColorPaleta.CREMA.getColor());
         panelContenidoMesas.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
         scrollPane = new JScrollPane(panelContenidoMesas);
