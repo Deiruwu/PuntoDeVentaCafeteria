@@ -104,7 +104,7 @@ public class OrdenDAO extends AbstractDAO<Orden, Integer> {
         EstadoOrden estado = null;
 
         try {
-            mesa = mesaDAO.buscarPorId(rs.getInt("mesero_id"));
+            mesa = mesaDAO.buscarPorId(rs.getInt("mesa_id"));
             mesero = empleadoDAO.buscarPorId(rs.getInt("mesero_id"));
             estado = estadoDAO.buscarPorId(rs.getInt("estado_id"));
         } catch (DAOException e) {

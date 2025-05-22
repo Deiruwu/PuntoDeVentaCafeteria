@@ -34,6 +34,7 @@ public class LoginFrame extends JFrame {
     private static final Color COLOR_PLACEHOLDER = new Color(120, 120, 120);  // Gris para placeholder
     private static final Color COLOR_BLANCO = new Color(255, 255, 255);       // Blanco puro
 
+
     // Ruta absoluta para el logo
     private static final String RUTA_LOGO = "imagenes/logo.png";
 
@@ -581,31 +582,5 @@ public class LoginFrame extends JFrame {
         } catch (Exception e) {
             mostrarMensaje("Error al abrir el sistema principal: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-
-    /**
-     * Metodo principal para pruebas
-     *
-     * @param args argumentos de línea de comandos
-     */
-    public static void main(String[] args) {
-        try {
-            // Establecer Look and Feel
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-            // Mejoras adicionales al UI general
-            UIManager.put("TextField.caretForeground", COLOR_TEXTO);
-            UIManager.put("PasswordField.caretForeground", COLOR_TEXTO);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new LoginFrame();
-            }
-        });
     }
 }

@@ -574,11 +574,56 @@ BEGIN
     WHERE id = NEW.producto_id;
 END;
 
+CREATE TRIGGER IF NOT EXISTS devolver_stock_si_orden_cancelada
+    AFTER UPDATE ON orden
+    FOR EACH ROW
+    WHEN NEW.estado_id = 6  -- ID de 'CANCELADA'
+BEGIN
+    -- Por cada item de la orden cancelada
+    INSERT INTO movimiento_inventario (
+        producto_id,
+        tipo_movimiento_id,
+        cantidad,
+        stock_previo,
+        stock_nuevo,
+        empleado_id,
+        referencia
+    )
+    SELECT
+        io.producto_id,
+        1, -- 1 = ENTRADA
+        io.cantidad,
+        p.stock_actual,
+        p.stock_actual + io.cantidad,
+        NEW.mesero_id,
+        'Cancelación Orden #' || NEW.id
+    FROM item_orden io
+             JOIN producto p ON p.id = io.producto_id
+    WHERE io.orden_id = NEW.id;
+
+    -- Devolver stock a cada producto
+    UPDATE producto
+    SET
+        stock_actual = stock_actual + (
+            SELECT SUM(io.cantidad)
+            FROM item_orden io
+            WHERE io.producto_id = producto.id AND io.orden_id = NEW.id
+        ),
+        disponible = 1,
+        fecha_actualizacion = CURRENT_TIMESTAMP
+    WHERE producto.id IN (
+        SELECT producto_id FROM item_orden WHERE orden_id = NEW.id
+    );
+END;
+
 -- Trigger para actualizar stock cuando se elimina un item de orden
 CREATE TRIGGER IF NOT EXISTS update_stock_item_orden_delete
     AFTER DELETE ON item_orden
     FOR EACH ROW
 BEGIN
+
+
+
     -- Guardar stock previo para el movimiento de inventario
     INSERT INTO movimiento_inventario (
         producto_id,

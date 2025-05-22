@@ -28,25 +28,4 @@ public class ControladorMesero {
     public void cambiarPanel(String nombrePanel) {
         vista.mostrarPanel(nombrePanel);
     }
-
-    public boolean enviarPedido() {
-        PanelTomarOrden panelTomarOrden = vista.getPanelTomarOrden();
-        if (panelTomarOrden.validarPedido()) {
-            // Aquí iría la lógica para enviar el pedido al sistema
-            JOptionPane.showMessageDialog(vista,
-                    "Pedido enviado correctamente",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-            panelTomarOrden.limpiarPedido();
-            vista.getPanelMesas().recargarMesas();
-            vista.getPanelGestionOrdenes().actualizarOrdenes();
-            return true;
-        } else {
-            JOptionPane.showMessageDialog(vista,
-                    "No hay un pedido válido para enviar",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-    }
 }

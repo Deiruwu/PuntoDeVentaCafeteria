@@ -8,6 +8,4 @@ public class ControladorTomarOrden {
     public ControladorTomarOrden() {
         ordenDAO = new OrdenDAO();
     }
-
-
 }

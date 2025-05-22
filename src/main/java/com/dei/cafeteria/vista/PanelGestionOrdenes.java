@@ -242,7 +242,7 @@ public class PanelGestionOrdenes extends JPanel {
         lblOrdenId.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblOrdenId.setForeground(ColorPaleta.AZUL.getColor());
 
-        JLabel lblMesa = new JLabel("Mesa: " + orden.getMesa().getNumero());
+        JLabel lblMesa = new JLabel("Mesa: " + orden.getMesa().getId());
         lblMesa.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         JLabel lblTotal = new JLabel(String.format("Total: $%.2f", orden.getTotal()));

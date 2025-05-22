@@ -135,7 +135,8 @@ public class VistaMesero extends JFrame {
         btnProductos.addActionListener(e -> mostrarPanel("productos"));
         btnTomarOrden.addActionListener(e -> mostrarPanel("tomarOrden"));
         btnGestionOrdenes.addActionListener(e -> mostrarPanel("gestionOrdenes"));
-        btnEnviarPedido.addActionListener(e -> controlador.enviarPedido());
+        btnEnviarPedido.addActionListener(e ->
+                panelTomarOrden.enviarPedido() );
     }
 
     public void mostrarPanel(String nombrePanel) {

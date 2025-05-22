@@ -34,12 +34,12 @@ public class PanelTomarOrden extends JPanel {
     private JLabel lblSubtotal;
     private JLabel lblStockDisponible;
 
-    // Datos simulados
+    // Datos
     private List<Mesa> listaMesas;
     private List<Producto> listaProductos;
     private Map<String, ItemOrden> elementosPedido; // Clave: "idProducto-idTamaño"
     private List<String> clavesPedido; // Para mapear filas a claves
-    private int mesaSeleccionada;
+    private int mesaSeleccionada = 0;
 
     public PanelTomarOrden(Empleado meseroActual) {
         this.meseroActual = meseroActual;
@@ -47,7 +47,6 @@ public class PanelTomarOrden extends JPanel {
         setBackground(ColorPaleta.CREMA.getColor());
         elementosPedido = new HashMap<>();
         clavesPedido = new ArrayList<>();
-
 
         inicializarComponentes();
         cargarDatos();
@@ -398,7 +397,6 @@ public class PanelTomarOrden extends JPanel {
     }
 
     public boolean validarPedido() {
-        // Validación 1: Mesa seleccionada
         if (mesaSeleccionada == 0) {
             JOptionPane.showMessageDialog(this,
                     "Debe seleccionar una mesa antes de enviar el pedido",
@@ -407,7 +405,6 @@ public class PanelTomarOrden extends JPanel {
             return false;
         }
 
-        // Validación 2: Elementos en el pedido
         if (elementosPedido.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "El pedido no contiene productos",
@@ -416,7 +413,6 @@ public class PanelTomarOrden extends JPanel {
             return false;
         }
 
-        // Validación 3: Cantidades válidas en todos los items
         for (ItemOrden item : elementosPedido.values()) {
             if (item.getCantidad() <= 0) {
                 JOptionPane.showMessageDialog(this,
@@ -426,7 +422,6 @@ public class PanelTomarOrden extends JPanel {
                 return false;
             }
 
-            // Validación 4: Stock suficiente
             if (item.getCantidad() > item.getProducto().getStockActual()) {
                 JOptionPane.showMessageDialog(this,
                         "No hay suficiente stock de " + item.getProducto().getNombre() +
@@ -441,7 +436,7 @@ public class PanelTomarOrden extends JPanel {
             EstadoMesaDAO estadoMesaDAO = new EstadoMesaDAO();
             MesaDAO mesaDAO = new MesaDAO(estadoMesaDAO);
 
-            Mesa mesa = mesaDAO.buscarPorId(mesaSeleccionada);
+            Mesa mesa = mesaDAO.buscarPorNumero(mesaSeleccionada);
             Empleado mesero = obtenerMeseroActual();
 
             // Crear la orden
@@ -481,6 +476,27 @@ public class PanelTomarOrden extends JPanel {
                     "Error al guardar el pedido: " + ex.getMessage(),
                     "Error de base de datos",
                     JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    public boolean enviarPedido() {
+        if (validarPedido()) {
+            JOptionPane.showMessageDialog(this,
+                    "Pedido enviado correctamente",
+                    "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+            limpiarPedido();
+            PanelMesas panelMesas = new PanelMesas();
+            panelMesas.recargarMesas();
+            PanelGestionOrdenes panelGestionOrdenes = new PanelGestionOrdenes(meseroActual);
+            panelGestionOrdenes.actualizarOrdenes();
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No hay un pedido válido para enviar",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE);
             return false;
         }
     }
