@@ -550,7 +550,6 @@ public class PanelProcesarPago extends JPanel {
             // Crear y guardar el pago
             Pago pago = Pago.builder()
                     .orden(ordenActual)
-                    .fechaHora(LocalDateTime.now())
                     .monto(montoRecibido)
                     .metodoPago(metodoPago)
                     .cambio(montoRecibido - ordenActual.getTotal())

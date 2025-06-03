@@ -16,21 +16,20 @@ import java.util.List;
 
 public class PagoDAO extends AbstractDAO<Pago, Integer> {
 
-    private static final String INSERT = "INSERT INTO pago (orden_id, fecha_hora, monto, metodo_pago_id, referencia, cambio, cajero_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE = "UPDATE pago SET orden_id=?, fecha_hora=?, monto=?, metodo_pago_id=?, referencia=?, cambio=? WHERE id=?";
+    private static final String INSERT = "INSERT INTO pago (orden_id, monto, metodo_pago_id, referencia, cambio, cajero_id) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE = "UPDATE pago SET orden_id=?, monto=?, metodo_pago_id=?, referencia=?, cambio=? WHERE id=?";
     private static final String DELETE = "DELETE FROM pago WHERE id=?";
     private static final String FIND_BY_ID = "SELECT * FROM pago WHERE id=?";
     private static final String FIND_BY_ORDEN_ID = "SELECT * FROM pago WHERE orden_id=?";
     private static final String FIND_BY_FECHA_RANGO = "SELECT * FROM pago WHERE fecha_hora BETWEEN ? AND ?";
     private static final String FIND_ALL = "SELECT * FROM pago";
-    private static final Log log = LogFactory.getLog(PagoDAO.class);
 
     @Override
     public Pago guardar(Pago pago) throws DAOException {
         try {
-            String referencia = pago.getReferencia() != null ? pago.getReferencia() : "";
+            String referencia = (pago.getReferencia() != null) ? pago.getReferencia() : "";
 
-            int id = ejecutarInsert(INSERT, pago.getOrdenId(), pago.getFechaHora(), pago.getMonto(),
+            int id = ejecutarInsert(INSERT, pago.getOrdenId(), pago.getMonto(),
                     pago.getMetodoPago().getId(), referencia, pago.getCambio(), pago.getCajero().getId());
             pago.setId(id);
             return pago;
@@ -42,10 +41,8 @@ public class PagoDAO extends AbstractDAO<Pago, Integer> {
     @Override
     public Pago actualizar(Pago pago) throws DAOException {
         try {
-            int ordenId = pago.getOrden() != null ? pago.getOrden().getId() : null;
-            int metodoPagoId = pago.getMetodoPago() != null ? pago.getMetodoPago().getId() : null;
-            int filas = ejecutarUpdate(UPDATE, ordenId, pago.getFechaHora(), pago.getMonto(),
-                    metodoPagoId, pago.getReferencia(), pago.getCambio(), pago.getId());
+            int filas = ejecutarUpdate(UPDATE, pago.getOrdenId(), pago.getMonto(),
+                    pago.getMetodoPagoId(), pago.getReferencia(), pago.getCambio(), pago.getId());
             if (filas == 0) throw new DAOException("Pago no encontrado con ID: " + pago.getId());
             return pago;
         } catch (SQLException e) {
@@ -99,8 +96,6 @@ public class PagoDAO extends AbstractDAO<Pago, Integer> {
             throw new DAOException("Error al listar pagos: " + e.getMessage(), e);
         }
     }
-
-
 
     private Pago mapear(ResultSet rs) throws SQLException {
         OrdenDAO ordenDAO= new OrdenDAO();

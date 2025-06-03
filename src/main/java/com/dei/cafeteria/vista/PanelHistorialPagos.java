@@ -17,11 +17,8 @@ import javax.swing.border.TitledBorder;
 import com.dei.cafeteria.dao.DAOException;
 import com.dei.cafeteria.dao.OrdenDAO;
 import com.dei.cafeteria.dao.PagoDAO;
-import com.dei.cafeteria.dao.ItemOrdenDAO;
 import com.dei.cafeteria.modelo.Empleado;
 import com.dei.cafeteria.modelo.Pago;
-import com.dei.cafeteria.modelo.Orden;
-import com.dei.cafeteria.modelo.ItemOrden;
 import com.dei.cafeteria.util.GeneradorPDF;
 
 /**

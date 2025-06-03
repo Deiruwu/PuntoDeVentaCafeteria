@@ -6,9 +6,7 @@ import com.dei.cafeteria.modelo.Empleado;
 import com.dei.cafeteria.util.ColorPaleta;
 import com.dei.cafeteria.vista.util.ComponentFactory;
 
-/**
- * Panel que muestra la información del empleado
- */
+/// Panel que muestra la información del empleado
 public class PanelInfoEmpleado extends JPanel {
 
     private JLabel lblFotoEmpleado;
@@ -42,7 +40,7 @@ public class PanelInfoEmpleado extends JPanel {
         // Obtener nombre del empleado
         String nombreEmpleado = empleado.getNombre();
         if (nombreEmpleado == null || nombreEmpleado.isEmpty()) {
-            nombreEmpleado = "Empleado";
+            nombreEmpleado = "Empleado (" + empleado.getId() + ")";
         }
 
         lblNombreEmpleado = new JLabel(nombreEmpleado);
@@ -52,9 +50,9 @@ public class PanelInfoEmpleado extends JPanel {
 
         // Obtener ID del empleado
         int idEmpleado = empleado.getId();
-        lblIdEmpleado = new JLabel("ID: " + idEmpleado);
-        lblIdEmpleado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblIdEmpleado.setForeground(ColorPaleta.CREMA.getColor());
+        lblIdEmpleado = new JLabel("\uF111   Connected");
+        lblIdEmpleado.setFont(new Font("fuenteNerd", 0, 12));
+        lblIdEmpleado.setForeground(new Color(72, 160, 92, 255));
         lblIdEmpleado.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Agregar componentes al panel

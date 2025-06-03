@@ -720,7 +720,11 @@ INSERT INTO mesa (id, numero, capacidad) VALUES
                                              (2, 2, 2),
                                              (3, 3, 4),
                                              (4, 4, 4),
-                                             (5, 5, 6);
+                                             (5, 5, 6),
+                                             (6, 6, 6),
+                                             (7, 7, 6),
+                                             (8, 8, 4),
+                                             (9, 9, 4);
 
 -- Insertar categorías de productos básicas
 INSERT INTO categoria_producto (id, nombre, descripcion) VALUES
